@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slot Car Home - Gestor Cloud</title>
+    <title>Slot Car Home - Gestor Inteligente</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,11 +17,9 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
-        /* Animaciones suaves */
-        .fade-in { animation: fadeIn 0.2s ease-out; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Loader spinner */
         .loader {
             border: 3px solid #f3f3f3;
             border-radius: 50%;
@@ -42,9 +40,9 @@
                 <i data-lucide="users" class="h-6 w-6 text-yellow-400"></i>
                 <div>
                     <h1 class="text-lg font-bold leading-none">Slot Car Home</h1>
-                    <div class="flex items-center gap-1 text-xs text-green-400 mt-1" id="connection-status">
-                        <i data-lucide="cloud" class="h-3 w-3"></i> 
-                        <span>Conectando...</span>
+                    <div class="flex items-center gap-1 text-xs mt-1" id="connection-badge">
+                        <i data-lucide="loader-2" class="h-3 w-3 animate-spin"></i> 
+                        <span id="connection-text">Iniciando...</span>
                     </div>
                 </div>
             </div>
@@ -58,16 +56,25 @@
     <!-- MAIN CONTENT -->
     <main class="max-w-3xl mx-auto p-4 relative">
         
-        <!-- LOADING OVERLAY (Initial) -->
-        <div id="app-loader" class="fixed inset-0 bg-slate-100 z-50 flex flex-col items-center justify-center text-slate-500">
-            <div class="loader mb-2"></div>
-            <p>Cargando Base de Datos...</p>
-        </div>
-
-        <!-- VISTA: BANDEJA (Inbox) -->
+        <!-- VISTA: BANDEJA -->
         <div id="view-bandeja" class="flex flex-col gap-6 fade-in">
             
-            <!-- FORMULARIO NUEVO CLIENTE -->
+            <!-- ALERTA MODO LOCAL (Solo visible si no hay Firebase) -->
+            <div id="local-mode-alert" class="hidden bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r shadow-sm">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i data-lucide="hard-drive" class="h-5 w-5 text-blue-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-blue-700">
+                            <strong>Modo Local Activo:</strong> Tus datos se guardan en este navegador. 
+                            <br><span class="text-xs text-blue-500">Para sincronizar en la nube, necesitarás configurar un proyecto de Firebase.</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORMULARIO -->
             <div class="bg-white p-5 rounded-2xl shadow-md border-t-4 border-yellow-400">
                 <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <i data-lucide="user-plus" class="h-4 w-4"></i> Nuevo Cliente
@@ -99,7 +106,7 @@
                 </form>
             </div>
 
-            <!-- LISTA DE CONTACTOS -->
+            <!-- LISTA -->
             <div>
                 <div class="flex justify-between items-end mb-3 px-1">
                     <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -107,13 +114,11 @@
                         <span id="counter-pending" class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full">0</span>
                     </h2>
                     <button id="btn-clear-all" class="text-xs text-red-400 hover:text-red-600 flex items-center gap-1 hidden">
-                        <i data-lucide="eraser" class="h-3 w-3"></i> Limpiar BD
+                        <i data-lucide="eraser" class="h-3 w-3"></i> Limpiar Todo
                     </button>
                 </div>
 
-                <div id="contacts-list" class="grid gap-3">
-                    <!-- Los contactos se inyectarán aquí con JS -->
-                </div>
+                <div id="contacts-list" class="grid gap-3"></div>
                 
                 <div id="empty-state" class="text-center py-12 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hidden">
                     <p class="text-gray-400 font-medium">Base de datos vacía.</p>
@@ -129,9 +134,7 @@
                     <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800">
                         <i data-lucide="settings" class="h-5 w-5"></i> Editor de Plantillas
                     </h2>
-                    <!-- Tabs -->
                     <div class="flex gap-2 overflow-x-auto pb-2" id="template-tabs">
-                        <!-- Botones de tabs generados dinámicamente o estáticos con listeners -->
                         <button data-template="kronoPersonal" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition bg-blue-600 text-white shadow-md">
                             <i data-lucide="monitor" class="h-4 w-4"></i> Krono Personal
                         </button>
@@ -151,390 +154,401 @@
                     <textarea id="template-editor" class="w-full h-80 p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 text-sm leading-relaxed font-mono resize-none"></textarea>
                     
                     <button id="btn-save-templates" class="mt-4 w-full bg-slate-800 text-white py-3 rounded-lg font-bold hover:bg-slate-900 transition flex justify-center items-center gap-2">
-                        <i data-lucide="save" class="h-5 w-5"></i> Guardar Cambios y Volver
+                        <i data-lucide="save" class="h-5 w-5"></i> Guardar Cambios
                     </button>
                 </div>
             </div>
         </div>
-
     </main>
 
-    <!-- MODAL DE PREVISUALIZACIÓN -->
+    <!-- MODAL -->
     <div id="modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden fade-in">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="bg-gray-800 text-white p-4 border-b flex justify-between items-center">
-                <h3 class="font-bold flex items-center gap-2" id="modal-title">
-                    <i data-lucide="mail" class="h-5 w-5"></i> Revisar Correo
-                </h3>
-                <button id="btn-close-modal" class="text-gray-400 hover:text-white transition">
-                    <i data-lucide="x" class="h-6 w-6"></i>
-                </button>
+                <h3 class="font-bold flex items-center gap-2" id="modal-title"></h3>
+                <button id="btn-close-modal" class="text-gray-400 hover:text-white transition"><i data-lucide="x" class="h-6 w-6"></i></button>
             </div>
             <div class="p-6 overflow-y-auto flex-1 space-y-4">
                 <div class="border-b pb-2">
                     <span class="text-gray-500 text-xs font-bold uppercase mr-2">Para:</span>
-                    <span id="modal-recipient" class="text-blue-600 bg-blue-50 px-2 py-1 rounded font-mono text-sm">email@ejemplo.com</span>
+                    <span id="modal-recipient" class="text-blue-600 bg-blue-50 px-2 py-1 rounded font-mono text-sm"></span>
                 </div>
                 <div id="modal-body" class="bg-gray-50 p-4 rounded-lg border text-sm whitespace-pre-wrap font-sans text-gray-700 leading-relaxed"></div>
             </div>
             <div class="p-4 border-t bg-gray-50 flex justify-end gap-3 flex-wrap">
                 <button id="btn-cancel-modal" class="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition text-sm font-medium">Cancelar</button>
                 <button id="btn-copy-text" class="px-4 py-2 bg-white border text-gray-700 rounded-lg hover:bg-gray-50 transition flex items-center gap-2 text-sm shadow-sm font-medium">
-                    <i data-lucide="copy" class="h-4 w-4"></i> Copiar Texto
+                    <i data-lucide="copy" class="h-4 w-4"></i> Copiar
                 </button>
                 <button id="btn-send-mail" class="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-lg flex items-center gap-2 text-sm">
-                    <i data-lucide="external-link" class="h-4 w-4"></i> Abrir Gmail y Enviar
+                    <i data-lucide="external-link" class="h-4 w-4"></i> Abrir Gmail
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- FIREBASE LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- CONFIGURACIÓN ---
-        // NOTA: Si descargas esto, asegúrate de reemplazar estas variables con tu propia configuración de Firebase.
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            // apiKey: "TU_API_KEY",
-            // authDomain: "TU_PROJECT_ID.firebaseapp.com",
-            // projectId: "TU_PROJECT_ID",
-            // ...
-        };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // --- SISTEMA DE ALMACENAMIENTO HÍBRIDO ---
+        let dbMode = 'LOCAL'; // Por defecto, asume local hasta que se demuestre lo contrario
+        let firebaseDb = null;
+        let firebaseUser = null;
+        let appId = 'slot-car-app';
 
-        // Init Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // --- ESTADO GLOBAL ---
-        let currentUser = null;
-        let contactos = [];
-        let plantillas = {
+        // Valores por defecto
+        const DEFAULT_PLANTILLAS = {
             kronoPersonal: `Hola,\n\n¡Gracias por tu interés en KRONO PERSONAL!\n\nEs el gestor de tiempos ideal para entrenamientos individuales...`,
             kronoDual: `Hola,\n\n¡Qué bueno que te intereses por KRONODUAL!\n\nEste es nuestro sistema diseñado para competiciones 1vs1...`,
             tracksTelemetry: `Hola,\n\nGracias por contactar sobre TRACKS TELEMETRY.\n\nEstás a punto de llevar el análisis de tu pista...`
         };
+
+        // Estado App
+        let contactos = [];
+        let plantillas = { ...DEFAULT_PLANTILLAS };
         let currentTemplateKey = 'kronoPersonal';
         let currentContactForMail = null;
 
-        // --- REFERENCIAS DOM ---
+        // Referencias DOM
         const dom = {
-            loader: document.getElementById('app-loader'),
-            statusText: document.querySelector('#connection-status span'),
+            badgeText: document.getElementById('connection-text'),
+            badgeIcon: document.querySelector('#connection-badge i'),
+            badgeContainer: document.getElementById('connection-badge'),
+            localAlert: document.getElementById('local-mode-alert'),
+            list: document.getElementById('contacts-list'),
+            empty: document.getElementById('empty-state'),
+            counter: document.getElementById('counter-pending'),
+            editor: document.getElementById('template-editor'),
             viewBandeja: document.getElementById('view-bandeja'),
             viewConfig: document.getElementById('view-config'),
-            btnToggleView: document.getElementById('btn-toggle-view'),
-            viewText: document.getElementById('view-text'),
-            formAdd: document.getElementById('form-add'),
-            listContainer: document.getElementById('contacts-list'),
-            emptyState: document.getElementById('empty-state'),
-            counterPending: document.getElementById('counter-pending'),
-            btnClearAll: document.getElementById('btn-clear-all'),
-            // Config
-            templateTabs: document.querySelectorAll('.tab-btn'),
-            templateEditor: document.getElementById('template-editor'),
-            editorLabel: document.getElementById('editor-label'),
-            btnSaveTemplates: document.getElementById('btn-save-templates'),
-            // Modal
-            modal: document.getElementById('modal-overlay'),
-            modalRecipient: document.getElementById('modal-recipient'),
-            modalBody: document.getElementById('modal-body'),
-            modalTitle: document.getElementById('modal-title'),
-            btnSend: document.getElementById('btn-send-mail'),
-            btnCopy: document.getElementById('btn-copy-text'),
-            btnCloseModal: document.getElementById('btn-close-modal'),
-            btnCancelModal: document.getElementById('btn-cancel-modal')
+            modal: document.getElementById('modal-overlay')
         };
 
         // --- INICIALIZACIÓN ---
-        async function init() {
+        async function initApp() {
             lucide.createIcons();
+
+            // 1. Detectar si hay configuración de Firebase (Entorno Canvas)
+            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                try {
+                    console.log("Detectado entorno Cloud/Canvas");
+                    const config = JSON.parse(__firebase_config);
+                    const app = initializeApp(config);
+                    const auth = getAuth(app);
+                    firebaseDb = getFirestore(app);
+                    appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            firebaseUser = user;
+                            dbMode = 'CLOUD';
+                            setConnectionStatus('cloud');
+                            loadDataCloud();
+                        }
+                    });
+                    return; // Salimos, dejamos que Firebase maneje todo
+                } catch (e) {
+                    console.warn("Fallo al conectar Firebase, pasando a Local", e);
+                }
+            }
             
-            // Auth Flow
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    dom.statusText.textContent = "Conectado";
-                    dom.statusText.parentElement.classList.replace('text-green-400', 'text-green-400'); // Ensure color
-                    startListeners();
-                } else {
-                    dom.statusText.textContent = "Desconectado";
-                }
-            });
+            // 2. Si no hay config o falló -> MODO LOCAL AUTOMÁTICO
+            dbMode = 'LOCAL';
+            setConnectionStatus('local');
+            loadDataLocal();
         }
 
-        function startListeners() {
-            // 1. Escuchar Contactos
-            const contactsRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'contacts');
-            onSnapshot(contactsRef, (snapshot) => {
-                contactos = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                // Ordenar por fecha descendente
+        // --- GESTIÓN DE UI ESTADO ---
+        function setConnectionStatus(type) {
+            if (type === 'cloud') {
+                dom.badgeText.textContent = "Cloud Sync Activo";
+                dom.badgeContainer.className = "flex items-center gap-1 text-xs text-green-400 mt-1";
+                dom.badgeIcon.setAttribute('data-lucide', 'cloud');
+                dom.localAlert.classList.add('hidden');
+            } else {
+                dom.badgeText.textContent = "Modo Local (GitHub)";
+                dom.badgeContainer.className = "flex items-center gap-1 text-xs text-blue-400 mt-1";
+                dom.badgeIcon.setAttribute('data-lucide', 'hard-drive');
+                dom.localAlert.classList.remove('hidden');
+            }
+            lucide.createIcons();
+        }
+
+        // --- CAPA DE DATOS (CLOUD) ---
+        function loadDataCloud() {
+            // Contactos
+            onSnapshot(collection(firebaseDb, 'artifacts', appId, 'users', firebaseUser.uid, 'contacts'), (snap) => {
+                contactos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 contactos.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-                renderContacts();
-                dom.loader.classList.add('hidden');
+                render();
             });
-
-            // 2. Escuchar Plantillas
-            const templatesRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'templates');
-            onSnapshot(templatesRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    plantillas = snapshot.data();
-                }
-                // Si estamos editando, actualizar el textarea
-                if (!dom.viewConfig.classList.contains('hidden')) {
-                    dom.templateEditor.value = plantillas[currentTemplateKey] || "";
-                }
+            // Plantillas
+            onSnapshot(doc(firebaseDb, 'artifacts', appId, 'users', firebaseUser.uid, 'settings', 'templates'), (snap) => {
+                if (snap.exists()) plantillas = snap.data();
+                if (!dom.viewConfig.classList.contains('hidden')) dom.editor.value = plantillas[currentTemplateKey] || "";
             });
         }
 
-        // --- RENDERIZADO ---
-        function renderContacts() {
-            dom.listContainer.innerHTML = '';
+        async function addContactCloud(data) {
+            await addDoc(collection(firebaseDb, 'artifacts', appId, 'users', firebaseUser.uid, 'contacts'), {
+                ...data, createdAt: serverTimestamp()
+            });
+        }
+
+        async function updateContactCloud(id, data) {
+            await updateDoc(doc(firebaseDb, 'artifacts', appId, 'users', firebaseUser.uid, 'contacts', id), data);
+        }
+
+        async function deleteContactCloud(id) {
+            await deleteDoc(doc(firebaseDb, 'artifacts', appId, 'users', firebaseUser.uid, 'contacts', id));
+        }
+
+        async function saveTemplatesCloud() {
+            await setDoc(doc(firebaseDb, 'artifacts', appId, 'users', firebaseUser.uid, 'settings', 'templates'), plantillas);
+        }
+
+        // --- CAPA DE DATOS (LOCAL) ---
+        function loadDataLocal() {
+            // Cargar de localStorage
+            const localContacts = localStorage.getItem('slot_contacts');
+            const localTemplates = localStorage.getItem('slot_templates');
+            
+            if (localContacts) contactos = JSON.parse(localContacts);
+            if (localTemplates) plantillas = JSON.parse(localTemplates);
+            
+            render();
+        }
+
+        function saveLocal() {
+            localStorage.setItem('slot_contacts', JSON.stringify(contactos));
+            localStorage.setItem('slot_templates', JSON.stringify(plantillas));
+            render();
+        }
+
+        async function addContactLocal(data) {
+            const newContact = { 
+                ...data, 
+                id: 'local_' + Date.now(), 
+                createdAt: { seconds: Date.now() / 1000 } 
+            };
+            contactos.unshift(newContact);
+            saveLocal();
+        }
+
+        async function updateContactLocal(id, data) {
+            contactos = contactos.map(c => c.id === id ? { ...c, ...data } : c);
+            saveLocal();
+        }
+
+        async function deleteContactLocal(id) {
+            contactos = contactos.filter(c => c.id !== id);
+            saveLocal();
+        }
+
+        async function saveTemplatesLocal() {
+            saveLocal(); // Las plantillas ya se actualizan en la variable global antes de llamar a esto
+        }
+
+        // --- RENDER ---
+        function render() {
+            dom.list.innerHTML = '';
             const pendientes = contactos.filter(c => c.estado === 'pendiente');
-            dom.counterPending.textContent = pendientes.length;
-
-            if (contactos.length === 0) {
-                dom.emptyState.classList.remove('hidden');
-                dom.btnClearAll.classList.add('hidden');
+            dom.counter.textContent = pendientes.length;
+            
+            // Botón Limpiar
+            const btnClear = document.getElementById('btn-clear-all');
+            if(contactos.length > 0) {
+                dom.empty.classList.add('hidden');
+                btnClear.classList.remove('hidden');
             } else {
-                dom.emptyState.classList.add('hidden');
-                dom.btnClearAll.classList.remove('hidden');
-                
-                contactos.forEach(c => {
-                    const card = document.createElement('div');
-                    const isProcesado = c.estado === 'procesado';
-                    const progInfo = getProgramInfo(c.programa);
-                    
-                    card.className = `bg-white rounded-xl p-5 shadow-sm border-l-4 transition-all fade-in ${
-                        isProcesado ? 'border-green-400 bg-gray-50 opacity-60' : 'border-slate-800'
-                    }`;
-                    
-                    card.innerHTML = `
-                        <div class="flex justify-between items-start mb-3">
-                            <div>
-                                <div class="flex items-center gap-2 mb-1">
-                                    <h3 class="font-bold text-lg text-gray-900 leading-none">${escapeHtml(c.nombre)}</h3>
-                                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${progInfo.color}">
-                                        ${progInfo.name}
-                                    </span>
-                                </div>
-                                <p class="text-sm text-gray-500 font-mono">${escapeHtml(c.email)}</p>
-                            </div>
-                            <span class="text-xs font-bold text-gray-400">${c.fecha}</span>
-                        </div>
-                        
-                        ${isProcesado ? `
-                            <div class="flex items-center gap-2 text-green-700 font-bold bg-green-100 p-2 rounded-lg justify-center border border-green-200 text-sm">
-                                <i data-lucide="check-circle" class="h-4 w-4"></i> Procesado
-                            </div>
-                        ` : `
-                            <div class="flex gap-2">
-                                <button onclick="window.prepareMail('${c.id}')" class="flex-1 bg-slate-800 text-white py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-900 shadow-md transition text-sm">
-                                    <i data-lucide="send" class="h-4 w-4"></i> Generar Carta
-                                </button>
-                                <button onclick="window.deleteContact('${c.id}')" class="w-10 flex items-center justify-center bg-gray-100 text-gray-400 rounded-lg hover:text-red-500 hover:bg-red-50 transition">
-                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
-                                </button>
-                            </div>
-                        `}
-                    `;
-                    dom.listContainer.appendChild(card);
-                });
-                lucide.createIcons(); // Refresh icons for new elements
+                dom.empty.classList.remove('hidden');
+                btnClear.classList.add('hidden');
             }
+
+            contactos.forEach(c => {
+                const el = document.createElement('div');
+                const info = getProgramInfo(c.programa);
+                const isDone = c.estado === 'procesado';
+                
+                el.className = `bg-white rounded-xl p-5 shadow-sm border-l-4 transition-all ${isDone ? 'border-green-400 bg-gray-50 opacity-60' : 'border-slate-800'}`;
+                el.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <h3 class="font-bold text-lg text-gray-900 leading-none">${escapeHtml(c.nombre)}</h3>
+                                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${info.color}">${info.name}</span>
+                            </div>
+                            <p class="text-sm text-gray-500 font-mono">${escapeHtml(c.email)}</p>
+                        </div>
+                        <span class="text-xs font-bold text-gray-400">${c.fecha}</span>
+                    </div>
+                    ${isDone ? `
+                        <div class="flex items-center gap-2 text-green-700 font-bold bg-green-100 p-2 rounded-lg justify-center border border-green-200 text-sm">
+                            <i data-lucide="check-circle" class="h-4 w-4"></i> Procesado
+                        </div>
+                    ` : `
+                        <div class="flex gap-2">
+                            <button onclick="window.appActions.prepare('${c.id}')" class="flex-1 bg-slate-800 text-white py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-900 shadow-md transition text-sm">
+                                <i data-lucide="send" class="h-4 w-4"></i> Generar
+                            </button>
+                            <button onclick="window.appActions.delete('${c.id}')" class="w-10 flex items-center justify-center bg-gray-100 text-gray-400 rounded-lg hover:text-red-500 hover:bg-red-50 transition">
+                                <i data-lucide="trash-2" class="h-4 w-4"></i>
+                            </button>
+                        </div>
+                    `}
+                `;
+                dom.list.appendChild(el);
+            });
+            lucide.createIcons();
         }
 
-        // --- LÓGICA DE NEGOCIO ---
-        
-        // Form Add
-        dom.formAdd.addEventListener('submit', async (e) => {
+        // --- HANDLERS UI ---
+        document.getElementById('form-add').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('input-email').value;
             const nombre = document.getElementById('input-nombre').value;
             const programa = document.getElementById('input-programa').value;
             
-            if (!email || !currentUser) return;
+            if(!email) return;
 
-            try {
-                const progName = getProgramInfo(programa).name;
-                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'contacts'), {
-                    nombre: nombre || 'Usuario',
-                    email: email,
-                    programa: programa,
-                    asunto: `Información sobre ${progName}`,
-                    fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    estado: 'pendiente',
-                    createdAt: serverTimestamp()
-                });
-                dom.formAdd.reset();
-                document.getElementById('input-programa').value = programa; // Mantener selección
-            } catch (err) {
-                console.error(err);
-                alert("Error guardando en la nube");
-            }
+            const data = {
+                email, nombre: nombre || 'Usuario', programa,
+                asunto: `Info: ${getProgramInfo(programa).name}`,
+                fecha: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),
+                estado: 'pendiente'
+            };
+
+            if (dbMode === 'CLOUD') await addContactCloud(data);
+            else await addContactLocal(data);
+
+            e.target.reset();
+            document.getElementById('input-programa').value = programa; // Mantener selección
         });
 
-        // Config View Logic
-        dom.btnToggleView.addEventListener('click', () => {
+        // Toggle Vistas
+        const btnView = document.getElementById('btn-toggle-view');
+        btnView.addEventListener('click', () => {
             const isConfig = !dom.viewConfig.classList.contains('hidden');
             if (isConfig) {
-                // Volver a bandeja
                 dom.viewConfig.classList.add('hidden');
                 dom.viewBandeja.classList.remove('hidden');
-                dom.viewText.textContent = "Editar Plantillas";
-                dom.btnToggleView.innerHTML = `<i data-lucide="settings" class="h-4 w-4"></i> <span id="view-text">Editar Plantillas</span>`;
+                document.getElementById('view-text').textContent = "Editar Plantillas";
+                btnView.innerHTML = `<i data-lucide="settings" class="h-4 w-4"></i> <span id="view-text">Editar Plantillas</span>`;
             } else {
-                // Ir a config
                 dom.viewBandeja.classList.add('hidden');
                 dom.viewConfig.classList.remove('hidden');
-                dom.viewText.textContent = "Volver a Bandeja";
-                dom.btnToggleView.innerHTML = `<i data-lucide="arrow-left" class="h-4 w-4"></i> <span id="view-text">Volver a Bandeja</span>`;
-                loadTemplateEditor(currentTemplateKey);
+                document.getElementById('view-text').textContent = "Volver";
+                btnView.innerHTML = `<i data-lucide="arrow-left" class="h-4 w-4"></i> <span id="view-text">Volver</span>`;
+                loadEditor(currentTemplateKey);
             }
             lucide.createIcons();
         });
 
-        // Template Tabs
-        dom.templateTabs.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const key = btn.dataset.template;
-                loadTemplateEditor(key);
-            });
+        // Tabs Config
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => loadEditor(btn.dataset.template));
         });
 
-        function loadTemplateEditor(key) {
+        function loadEditor(key) {
             currentTemplateKey = key;
-            // Update UI tabs
-            dom.templateTabs.forEach(b => {
-                if (b.dataset.template === key) {
-                    b.classList.remove('bg-gray-100', 'text-gray-600');
-                    b.classList.add('bg-blue-600', 'text-white', 'shadow-md');
-                } else {
-                    b.classList.add('bg-gray-100', 'text-gray-600');
-                    b.classList.remove('bg-blue-600', 'text-white', 'shadow-md', 'bg-purple-600', 'bg-orange-600');
-                    // Simple reset logic, could be more specific per color but blue is fine for active state editor
-                }
+            // Estilos Tabs
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                const active = b.dataset.template === key;
+                b.className = `tab-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition ${active ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`;
             });
-            
-            const info = getProgramInfo(key);
-            dom.editorLabel.textContent = `Editando carta para: ${info.name}`;
-            dom.templateEditor.value = plantillas[key] || "";
+            dom.editor.value = plantillas[key] || "";
+            document.getElementById('editor-label').textContent = `Editando: ${getProgramInfo(key).name}`;
+            lucide.createIcons();
         }
 
-        // Save Templates
-        dom.btnSaveTemplates.addEventListener('click', async () => {
-            if (!currentUser) return;
-            const originalText = dom.btnSaveTemplates.innerHTML;
-            dom.btnSaveTemplates.innerHTML = `<div class="loader mr-2 border-t-white" style="width:16px;height:16px;"></div> Guardando...`;
+        // Guardar Plantillas
+        document.getElementById('btn-save-templates').addEventListener('click', async () => {
+            plantillas[currentTemplateKey] = dom.editor.value;
+            if (dbMode === 'CLOUD') await saveTemplatesCloud();
+            else await saveTemplatesLocal();
             
-            plantillas[currentTemplateKey] = dom.templateEditor.value;
-            
-            try {
-                await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'templates'), plantillas);
-                setTimeout(() => {
-                    dom.btnToggleView.click(); // Volver a bandeja
-                }, 500);
-            } catch (err) {
-                alert("Error al guardar");
-            } finally {
-                dom.btnSaveTemplates.innerHTML = originalText;
-                lucide.createIcons();
+            alert('Plantilla guardada correctamente');
+        });
+
+        // Botón Limpiar Todo
+        document.getElementById('btn-clear-all').addEventListener('click', async () => {
+            if(confirm("¿Estás seguro de borrar TODA la lista?")) {
+                if(dbMode === 'LOCAL') {
+                    contactos = [];
+                    saveLocal();
+                } else {
+                    alert("En modo Cloud, por seguridad, borra uno a uno.");
+                }
             }
         });
 
-        // --- ACTIONS GLOBAL (window scope for HTML onclick) ---
-        window.deleteContact = async (id) => {
-            if (confirm("¿Eliminar contacto?")) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'contacts', id));
+        // --- ACCIONES GLOBALES (Window) ---
+        window.appActions = {
+            delete: async (id) => {
+                if(confirm("¿Eliminar?")) {
+                    if (dbMode === 'CLOUD') await deleteContactCloud(id);
+                    else await deleteContactLocal(id);
+                }
+            },
+            prepare: (id) => {
+                const c = contactos.find(x => x.id === id);
+                if(!c) return;
+                currentContactForMail = c;
+                
+                document.getElementById('modal-title').textContent = c.asunto;
+                document.getElementById('modal-recipient').textContent = c.email;
+                document.getElementById('modal-body').textContent = plantillas[c.programa] || "";
+                dom.modal.classList.remove('hidden');
             }
         };
 
-        dom.btnClearAll.addEventListener('click', async () => {
-            if (confirm("¿Borrar TODOS los contactos?")) {
-                const promises = contactos.map(c => deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'contacts', c.id)));
-                await Promise.all(promises);
-            }
+        // Modal Actions
+        const closeModal = () => dom.modal.classList.add('hidden');
+        document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+        document.getElementById('btn-cancel-modal').addEventListener('click', closeModal);
+
+        document.getElementById('btn-copy-text').addEventListener('click', () => {
+            navigator.clipboard.writeText(document.getElementById('modal-body').textContent);
+            alert("Copiado!");
         });
 
-        window.prepareMail = (id) => {
-            const contact = contactos.find(c => c.id === id);
-            if (!contact) return;
-            
-            currentContactForMail = contact;
-            const body = plantillas[contact.programa] || "";
-            
-            dom.modalRecipient.textContent = contact.email;
-            dom.modalTitle.innerHTML = `<i data-lucide="mail" class="h-5 w-5 mr-2"></i> ${escapeHtml(contact.asunto)}`;
-            dom.modalBody.textContent = body;
-            
-            dom.modal.classList.remove('hidden');
-            lucide.createIcons();
-        };
-
-        // --- MODAL ACTIONS ---
-        const closeModal = () => {
-            dom.modal.classList.add('hidden');
-            currentContactForMail = null;
-        };
-        dom.btnCloseModal.addEventListener('click', closeModal);
-        dom.btnCancelModal.addEventListener('click', closeModal);
-
-        dom.btnCopy.addEventListener('click', () => {
+        document.getElementById('btn-send-mail').addEventListener('click', async () => {
             if (!currentContactForMail) return;
-            const text = dom.modalBody.textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                const original = dom.btnCopy.innerHTML;
-                dom.btnCopy.innerHTML = `<i data-lucide="check" class="h-4 w-4"></i> Copiado`;
-                setTimeout(() => {
-                    dom.btnCopy.innerHTML = original;
-                    lucide.createIcons();
-                }, 2000);
-            });
-        });
-
-        dom.btnSend.addEventListener('click', async () => {
-            if (!currentContactForMail) return;
-            const subject = currentContactForMail.asunto;
-            const body = dom.modalBody.textContent;
-            const mailto = `mailto:${currentContactForMail.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            const link = `mailto:${currentContactForMail.email}?subject=${encodeURIComponent(currentContactForMail.asunto)}&body=${encodeURIComponent(document.getElementById('modal-body').textContent)}`;
+            window.open(link, '_blank');
             
-            window.open(mailto, '_blank');
+            // Marcar procesado
+            if (dbMode === 'CLOUD') await updateContactCloud(currentContactForMail.id, { estado: 'procesado' });
+            else await updateContactLocal(currentContactForMail.id, { estado: 'procesado' });
             
-            // Mark as processed
-            await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'contacts', currentContactForMail.id), {
-                estado: 'procesado'
-            });
             closeModal();
         });
 
-
-        // --- HELPERS ---
-        function getProgramInfo(key) {
-            switch(key) {
-                case 'kronoPersonal': return { name: 'Krono Personal', color: 'bg-blue-100 text-blue-800 border-blue-200' };
-                case 'kronoDual': return { name: 'KronoDual', color: 'bg-purple-100 text-purple-800 border-purple-200' };
-                case 'tracksTelemetry': return { name: 'Tracks Telemetry', color: 'bg-orange-100 text-orange-800 border-orange-200' };
-                default: return { name: 'Programa', color: 'bg-gray-100 text-gray-800' };
-            }
+        // Helpers
+        function getProgramInfo(k) {
+            const map = {
+                kronoPersonal: { name: 'Krono Personal', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+                kronoDual: { name: 'KronoDual', color: 'bg-purple-100 text-purple-800 border-purple-200' },
+                tracksTelemetry: { name: 'Tracks Telemetry', color: 'bg-orange-100 text-orange-800 border-orange-200' }
+            };
+            return map[k] || { name: 'Otro', color: 'bg-gray-100' };
         }
-
         function escapeHtml(text) {
             if (!text) return text;
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
-        // Run
-        init();
+        // Start
+        initApp();
+
     </script>
 </body>
 </html>
