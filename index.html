@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slot Car Home - Gestor Cloud</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        /* Animaciones suaves */
+        .fade-in { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Loader spinner */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #3b82f6;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-10">
+
+    <!-- HEADER -->
+    <header class="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-30">
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i data-lucide="users" class="h-6 w-6 text-yellow-400"></i>
+                <div>
+                    <h1 class="text-lg font-bold leading-none">Slot Car Home</h1>
+                    <div class="flex items-center gap-1 text-xs text-green-400 mt-1" id="connection-status">
+                        <i data-lucide="cloud" class="h-3 w-3"></i> 
+                        <span>Conectando...</span>
+                    </div>
+                </div>
+            </div>
+            <button id="btn-toggle-view" class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition border border-slate-700 flex items-center gap-2 text-sm font-medium">
+                <i data-lucide="settings" class="h-4 w-4"></i> 
+                <span id="view-text">Editar Plantillas</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-3xl mx-auto p-4 relative">
+        
+        <!-- LOADING OVERLAY (Initial) -->
+        <div id="app-loader" class="fixed inset-0 bg-slate-100 z-50 flex flex-col items-center justify-center text-slate-500">
+            <div class="loader mb-2"></div>
+            <p>Cargando Base de Datos...</p>
+        </div>
+
+        <!-- VISTA: BANDEJA (Inbox) -->
+        <div id="view-bandeja" class="flex flex-col gap-6 fade-in">
+            
+            <!-- FORMULARIO NUEVO CLIENTE -->
+            <div class="bg-white p-5 rounded-2xl shadow-md border-t-4 border-yellow-400">
+                <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <i data-lucide="user-plus" class="h-4 w-4"></i> Nuevo Cliente
+                </h2>
+                <form id="form-add" class="flex flex-col gap-3">
+                    <div class="flex flex-col md:flex-row gap-3">
+                        <div class="flex-1">
+                            <input type="email" id="input-email" placeholder="Email (ej: cliente@gmail.com)" required
+                                class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-400 outline-none transition">
+                        </div>
+                        <div class="flex-1">
+                            <input type="text" id="input-nombre" placeholder="Nombre (Opcional)"
+                                class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-400 outline-none transition">
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 items-center bg-gray-50 p-2 rounded-lg border border-gray-200">
+                        <span class="text-sm font-bold text-gray-500 pl-2">Interesado en:</span>
+                        <select id="input-programa" class="flex-1 bg-transparent border-none p-2 focus:ring-0 font-medium text-slate-800 cursor-pointer outline-none">
+                            <option value="kronoPersonal">🏁 Krono Personal</option>
+                            <option value="kronoDual">⚡ KronoDual (1vs1)</option>
+                            <option value="tracksTelemetry">📊 Tracks Telemetry</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="mt-1 bg-yellow-400 text-yellow-900 font-bold px-6 py-3 rounded-lg hover:bg-yellow-500 transition shadow-sm flex items-center justify-center gap-2">
+                        <i data-lucide="plus" class="h-5 w-5"></i> Añadir a la Base de Datos
+                    </button>
+                </form>
+            </div>
+
+            <!-- LISTA DE CONTACTOS -->
+            <div>
+                <div class="flex justify-between items-end mb-3 px-1">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        Cola de Envíos 
+                        <span id="counter-pending" class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full">0</span>
+                    </h2>
+                    <button id="btn-clear-all" class="text-xs text-red-400 hover:text-red-600 flex items-center gap-1 hidden">
+                        <i data-lucide="eraser" class="h-3 w-3"></i> Limpiar BD
+                    </button>
+                </div>
+
+                <div id="contacts-list" class="grid gap-3">
+                    <!-- Los contactos se inyectarán aquí con JS -->
+                </div>
+                
+                <div id="empty-state" class="text-center py-12 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hidden">
+                    <p class="text-gray-400 font-medium">Base de datos vacía.</p>
+                    <p class="text-sm text-gray-400 mt-1">Añade un cliente arriba para empezar.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA: CONFIGURACIÓN -->
+        <div id="view-config" class="hidden fade-in">
+            <div class="bg-white rounded-xl shadow overflow-hidden">
+                <div class="p-6 pb-0">
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800">
+                        <i data-lucide="settings" class="h-5 w-5"></i> Editor de Plantillas
+                    </h2>
+                    <!-- Tabs -->
+                    <div class="flex gap-2 overflow-x-auto pb-2" id="template-tabs">
+                        <!-- Botones de tabs generados dinámicamente o estáticos con listeners -->
+                        <button data-template="kronoPersonal" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition bg-blue-600 text-white shadow-md">
+                            <i data-lucide="monitor" class="h-4 w-4"></i> Krono Personal
+                        </button>
+                        <button data-template="kronoDual" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition bg-gray-100 text-gray-600 hover:bg-gray-200">
+                            <i data-lucide="zap" class="h-4 w-4"></i> KronoDual
+                        </button>
+                        <button data-template="tracksTelemetry" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition bg-gray-100 text-gray-600 hover:bg-gray-200">
+                            <i data-lucide="activity" class="h-4 w-4"></i> Tracks Telemetry
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-6 pt-4">
+                    <div class="mb-2 text-xs text-gray-500 font-medium uppercase tracking-wider" id="editor-label">
+                        Editando carta para: Krono Personal
+                    </div>
+                    <textarea id="template-editor" class="w-full h-80 p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 text-sm leading-relaxed font-mono resize-none"></textarea>
+                    
+                    <button id="btn-save-templates" class="mt-4 w-full bg-slate-800 text-white py-3 rounded-lg font-bold hover:bg-slate-900 transition flex justify-center items-center gap-2">
+                        <i data-lucide="save" class="h-5 w-5"></i> Guardar Cambios y Volver
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL DE PREVISUALIZACIÓN -->
+    <div id="modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden fade-in">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-gray-800 text-white p-4 border-b flex justify-between items-center">
+                <h3 class="font-bold flex items-center gap-2" id="modal-title">
+                    <i data-lucide="mail" class="h-5 w-5"></i> Revisar Correo
+                </h3>
+                <button id="btn-close-modal" class="text-gray-400 hover:text-white transition">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 space-y-4">
+                <div class="border-b pb-2">
+                    <span class="text-gray-500 text-xs font-bold uppercase mr-2">Para:</span>
+                    <span id="modal-recipient" class="text-blue-600 bg-blue-50 px-2 py-1 rounded font-mono text-sm">email@ejemplo.com</span>
+                </div>
+                <div id="modal-body" class="bg-gray-50 p-4 rounded-lg border text-sm whitespace-pre-wrap font-sans text-gray-700 leading-relaxed"></div>
+            </div>
+            <div class="p-4 border-t bg-gray-50 flex justify-end gap-3 flex-wrap">
+                <button id="btn-cancel-modal" class="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition text-sm font-medium">Cancelar</button>
+                <button id="btn-copy-text" class="px-4 py-2 bg-white border text-gray-700 rounded-lg hover:bg-gray-50 transition flex items-center gap-2 text-sm shadow-sm font-medium">
+                    <i data-lucide="copy" class="h-4 w-4"></i> Copiar Texto
+                </button>
+                <button id="btn-send-mail" class="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-lg flex items-center gap-2 text-sm">
+                    <i data-lucide="external-link" class="h-4 w-4"></i> Abrir Gmail y Enviar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- CONFIGURACIÓN ---
+        // NOTA: Si descargas esto, asegúrate de reemplazar estas variables con tu propia configuración de Firebase.
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            // apiKey: "TU_API_KEY",
+            // authDomain: "TU_PROJECT_ID.firebaseapp.com",
+            // projectId: "TU_PROJECT_ID",
+            // ...
+        };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // Init Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- ESTADO GLOBAL ---
+        let currentUser = null;
+        let contactos = [];
+        let plantillas = {
+            kronoPersonal: `Hola,\n\n¡Gracias por tu interés en KRONO PERSONAL!\n\nEs el gestor de tiempos ideal para entrenamientos individuales...`,
+            kronoDual: `Hola,\n\n¡Qué bueno que te intereses por KRONODUAL!\n\nEste es nuestro sistema diseñado para competiciones 1vs1...`,
+            tracksTelemetry: `Hola,\n\nGracias por contactar sobre TRACKS TELEMETRY.\n\nEstás a punto de llevar el análisis de tu pista...`
+        };
+        let currentTemplateKey = 'kronoPersonal';
+        let currentContactForMail = null;
+
+        // --- REFERENCIAS DOM ---
+        const dom = {
+            loader: document.getElementById('app-loader'),
+            statusText: document.querySelector('#connection-status span'),
+            viewBandeja: document.getElementById('view-bandeja'),
+            viewConfig: document.getElementById('view-config'),
+            btnToggleView: document.getElementById('btn-toggle-view'),
+            viewText: document.getElementById('view-text'),
+            formAdd: document.getElementById('form-add'),
+            listContainer: document.getElementById('contacts-list'),
+            emptyState: document.getElementById('empty-state'),
+            counterPending: document.getElementById('counter-pending'),
+            btnClearAll: document.getElementById('btn-clear-all'),
+            // Config
+            templateTabs: document.querySelectorAll('.tab-btn'),
+            templateEditor: document.getElementById('template-editor'),
+            editorLabel: document.getElementById('editor-label'),
+            btnSaveTemplates: document.getElementById('btn-save-templates'),
+            // Modal
+            modal: document.getElementById('modal-overlay'),
+            modalRecipient: document.getElementById('modal-recipient'),
+            modalBody: document.getElementById('modal-body'),
+            modalTitle: document.getElementById('modal-title'),
+            btnSend: document.getElementById('btn-send-mail'),
+            btnCopy: document.getElementById('btn-copy-text'),
+            btnCloseModal: document.getElementById('btn-close-modal'),
+            btnCancelModal: document.getElementById('btn-cancel-modal')
+        };
+
+        // --- INICIALIZACIÓN ---
+        async function init() {
+            lucide.createIcons();
+            
+            // Auth Flow
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    dom.statusText.textContent = "Conectado";
+                    dom.statusText.parentElement.classList.replace('text-green-400', 'text-green-400'); // Ensure color
+                    startListeners();
+                } else {
+                    dom.statusText.textContent = "Desconectado";
+                }
+            });
+        }
+
+        function startListeners() {
+            // 1. Escuchar Contactos
+            const contactsRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'contacts');
+            onSnapshot(contactsRef, (snapshot) => {
+                contactos = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                // Ordenar por fecha descendente
+                contactos.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                renderContacts();
+                dom.loader.classList.add('hidden');
+            });
+
+            // 2. Escuchar Plantillas
+            const templatesRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'templates');
+            onSnapshot(templatesRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    plantillas = snapshot.data();
+                }
+                // Si estamos editando, actualizar el textarea
+                if (!dom.viewConfig.classList.contains('hidden')) {
+                    dom.templateEditor.value = plantillas[currentTemplateKey] || "";
+                }
+            });
+        }
+
+        // --- RENDERIZADO ---
+        function renderContacts() {
+            dom.listContainer.innerHTML = '';
+            const pendientes = contactos.filter(c => c.estado === 'pendiente');
+            dom.counterPending.textContent = pendientes.length;
+
+            if (contactos.length === 0) {
+                dom.emptyState.classList.remove('hidden');
+                dom.btnClearAll.classList.add('hidden');
+            } else {
+                dom.emptyState.classList.add('hidden');
+                dom.btnClearAll.classList.remove('hidden');
+                
+                contactos.forEach(c => {
+                    const card = document.createElement('div');
+                    const isProcesado = c.estado === 'procesado';
+                    const progInfo = getProgramInfo(c.programa);
+                    
+                    card.className = `bg-white rounded-xl p-5 shadow-sm border-l-4 transition-all fade-in ${
+                        isProcesado ? 'border-green-400 bg-gray-50 opacity-60' : 'border-slate-800'
+                    }`;
+                    
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h3 class="font-bold text-lg text-gray-900 leading-none">${escapeHtml(c.nombre)}</h3>
+                                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${progInfo.color}">
+                                        ${progInfo.name}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-500 font-mono">${escapeHtml(c.email)}</p>
+                            </div>
+                            <span class="text-xs font-bold text-gray-400">${c.fecha}</span>
+                        </div>
+                        
+                        ${isProcesado ? `
+                            <div class="flex items-center gap-2 text-green-700 font-bold bg-green-100 p-2 rounded-lg justify-center border border-green-200 text-sm">
+                                <i data-lucide="check-circle" class="h-4 w-4"></i> Procesado
+                            </div>
+                        ` : `
+                            <div class="flex gap-2">
+                                <button onclick="window.prepareMail('${c.id}')" class="flex-1 bg-slate-800 text-white py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-900 shadow-md transition text-sm">
+                                    <i data-lucide="send" class="h-4 w-4"></i> Generar Carta
+                                </button>
+                                <button onclick="window.deleteContact('${c.id}')" class="w-10 flex items-center justify-center bg-gray-100 text-gray-400 rounded-lg hover:text-red-500 hover:bg-red-50 transition">
+                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                </button>
+                            </div>
+                        `}
+                    `;
+                    dom.listContainer.appendChild(card);
+                });
+                lucide.createIcons(); // Refresh icons for new elements
+            }
+        }
+
+        // --- LÓGICA DE NEGOCIO ---
+        
+        // Form Add
+        dom.formAdd.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('input-email').value;
+            const nombre = document.getElementById('input-nombre').value;
+            const programa = document.getElementById('input-programa').value;
+            
+            if (!email || !currentUser) return;
+
+            try {
+                const progName = getProgramInfo(programa).name;
+                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'contacts'), {
+                    nombre: nombre || 'Usuario',
+                    email: email,
+                    programa: programa,
+                    asunto: `Información sobre ${progName}`,
+                    fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    estado: 'pendiente',
+                    createdAt: serverTimestamp()
+                });
+                dom.formAdd.reset();
+                document.getElementById('input-programa').value = programa; // Mantener selección
+            } catch (err) {
+                console.error(err);
+                alert("Error guardando en la nube");
+            }
+        });
+
+        // Config View Logic
+        dom.btnToggleView.addEventListener('click', () => {
+            const isConfig = !dom.viewConfig.classList.contains('hidden');
+            if (isConfig) {
+                // Volver a bandeja
+                dom.viewConfig.classList.add('hidden');
+                dom.viewBandeja.classList.remove('hidden');
+                dom.viewText.textContent = "Editar Plantillas";
+                dom.btnToggleView.innerHTML = `<i data-lucide="settings" class="h-4 w-4"></i> <span id="view-text">Editar Plantillas</span>`;
+            } else {
+                // Ir a config
+                dom.viewBandeja.classList.add('hidden');
+                dom.viewConfig.classList.remove('hidden');
+                dom.viewText.textContent = "Volver a Bandeja";
+                dom.btnToggleView.innerHTML = `<i data-lucide="arrow-left" class="h-4 w-4"></i> <span id="view-text">Volver a Bandeja</span>`;
+                loadTemplateEditor(currentTemplateKey);
+            }
+            lucide.createIcons();
+        });
+
+        // Template Tabs
+        dom.templateTabs.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const key = btn.dataset.template;
+                loadTemplateEditor(key);
+            });
+        });
+
+        function loadTemplateEditor(key) {
+            currentTemplateKey = key;
+            // Update UI tabs
+            dom.templateTabs.forEach(b => {
+                if (b.dataset.template === key) {
+                    b.classList.remove('bg-gray-100', 'text-gray-600');
+                    b.classList.add('bg-blue-600', 'text-white', 'shadow-md');
+                } else {
+                    b.classList.add('bg-gray-100', 'text-gray-600');
+                    b.classList.remove('bg-blue-600', 'text-white', 'shadow-md', 'bg-purple-600', 'bg-orange-600');
+                    // Simple reset logic, could be more specific per color but blue is fine for active state editor
+                }
+            });
+            
+            const info = getProgramInfo(key);
+            dom.editorLabel.textContent = `Editando carta para: ${info.name}`;
+            dom.templateEditor.value = plantillas[key] || "";
+        }
+
+        // Save Templates
+        dom.btnSaveTemplates.addEventListener('click', async () => {
+            if (!currentUser) return;
+            const originalText = dom.btnSaveTemplates.innerHTML;
+            dom.btnSaveTemplates.innerHTML = `<div class="loader mr-2 border-t-white" style="width:16px;height:16px;"></div> Guardando...`;
+            
+            plantillas[currentTemplateKey] = dom.templateEditor.value;
+            
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'templates'), plantillas);
+                setTimeout(() => {
+                    dom.btnToggleView.click(); // Volver a bandeja
+                }, 500);
+            } catch (err) {
+                alert("Error al guardar");
+            } finally {
+                dom.btnSaveTemplates.innerHTML = originalText;
+                lucide.createIcons();
+            }
+        });
+
+        // --- ACTIONS GLOBAL (window scope for HTML onclick) ---
+        window.deleteContact = async (id) => {
+            if (confirm("¿Eliminar contacto?")) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'contacts', id));
+            }
+        };
+
+        dom.btnClearAll.addEventListener('click', async () => {
+            if (confirm("¿Borrar TODOS los contactos?")) {
+                const promises = contactos.map(c => deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'contacts', c.id)));
+                await Promise.all(promises);
+            }
+        });
+
+        window.prepareMail = (id) => {
+            const contact = contactos.find(c => c.id === id);
+            if (!contact) return;
+            
+            currentContactForMail = contact;
+            const body = plantillas[contact.programa] || "";
+            
+            dom.modalRecipient.textContent = contact.email;
+            dom.modalTitle.innerHTML = `<i data-lucide="mail" class="h-5 w-5 mr-2"></i> ${escapeHtml(contact.asunto)}`;
+            dom.modalBody.textContent = body;
+            
+            dom.modal.classList.remove('hidden');
+            lucide.createIcons();
+        };
+
+        // --- MODAL ACTIONS ---
+        const closeModal = () => {
+            dom.modal.classList.add('hidden');
+            currentContactForMail = null;
+        };
+        dom.btnCloseModal.addEventListener('click', closeModal);
+        dom.btnCancelModal.addEventListener('click', closeModal);
+
+        dom.btnCopy.addEventListener('click', () => {
+            if (!currentContactForMail) return;
+            const text = dom.modalBody.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const original = dom.btnCopy.innerHTML;
+                dom.btnCopy.innerHTML = `<i data-lucide="check" class="h-4 w-4"></i> Copiado`;
+                setTimeout(() => {
+                    dom.btnCopy.innerHTML = original;
+                    lucide.createIcons();
+                }, 2000);
+            });
+        });
+
+        dom.btnSend.addEventListener('click', async () => {
+            if (!currentContactForMail) return;
+            const subject = currentContactForMail.asunto;
+            const body = dom.modalBody.textContent;
+            const mailto = `mailto:${currentContactForMail.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            window.open(mailto, '_blank');
+            
+            // Mark as processed
+            await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'contacts', currentContactForMail.id), {
+                estado: 'procesado'
+            });
+            closeModal();
+        });
+
+
+        // --- HELPERS ---
+        function getProgramInfo(key) {
+            switch(key) {
+                case 'kronoPersonal': return { name: 'Krono Personal', color: 'bg-blue-100 text-blue-800 border-blue-200' };
+                case 'kronoDual': return { name: 'KronoDual', color: 'bg-purple-100 text-purple-800 border-purple-200' };
+                case 'tracksTelemetry': return { name: 'Tracks Telemetry', color: 'bg-orange-100 text-orange-800 border-orange-200' };
+                default: return { name: 'Programa', color: 'bg-gray-100 text-gray-800' };
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return text;
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // Run
+        init();
+    </script>
+</body>
+</html>
