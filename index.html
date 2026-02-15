@@ -48,7 +48,7 @@
             </div>
             <button id="btn-toggle-view" class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition border border-slate-700 flex items-center gap-2 text-sm font-medium">
                 <i data-lucide="settings" class="h-4 w-4"></i> 
-                <span id="view-text">Editar Plantillas</span>
+                <span id="view-text">Configuración</span>
             </button>
         </div>
     </header>
@@ -59,7 +59,7 @@
         <!-- VISTA: BANDEJA -->
         <div id="view-bandeja" class="flex flex-col gap-6 fade-in">
             
-            <!-- ALERTA MODO LOCAL (Solo visible si no hay Firebase) -->
+            <!-- ALERTA MODO LOCAL -->
             <div id="local-mode-alert" class="hidden bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r shadow-sm">
                 <div class="flex">
                     <div class="flex-shrink-0">
@@ -67,9 +67,48 @@
                     </div>
                     <div class="ml-3">
                         <p class="text-sm text-blue-700">
-                            <strong>Modo Local Activo:</strong> Tus datos se guardan en este navegador. 
-                            <br><span class="text-xs text-blue-500">Para sincronizar en la nube, necesitarás configurar un proyecto de Firebase.</span>
+                            <strong>Modo Local Activo:</strong> Los datos viven en este navegador.
+                            <br><span class="text-xs text-blue-500">Usa "Guardar Backup" antes de cambiar de dispositivo o subir a GitHub.</span>
                         </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL ACCIONES MASIVAS (NUEVO) -->
+            <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-5 rounded-2xl shadow-lg text-white">
+                <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <i data-lucide="mail-plus" class="h-4 w-4"></i> Envío Masivo
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Krono Personal -->
+                    <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-blue-300 text-sm">Krono Personal</span>
+                            <span id="count-kp" class="bg-blue-900 text-blue-200 text-xs px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="window.appActions.copyMassEmails('kronoPersonal')" class="flex-1 bg-white text-slate-900 text-xs font-bold py-2 rounded hover:bg-blue-50 transition flex justify-center items-center gap-1">
+                                <i data-lucide="copy" class="h-3 w-3"></i> Copiar Emails
+                            </button>
+                            <button onclick="window.appActions.sendMassEmail('kronoPersonal')" class="flex-1 bg-blue-600 text-white text-xs font-bold py-2 rounded hover:bg-blue-500 transition flex justify-center items-center gap-1">
+                                <i data-lucide="send" class="h-3 w-3"></i> Redactar
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Krono Dual -->
+                    <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-purple-300 text-sm">KronoDual</span>
+                            <span id="count-kd" class="bg-purple-900 text-purple-200 text-xs px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="window.appActions.copyMassEmails('kronoDual')" class="flex-1 bg-white text-slate-900 text-xs font-bold py-2 rounded hover:bg-purple-50 transition flex justify-center items-center gap-1">
+                                <i data-lucide="copy" class="h-3 w-3"></i> Copiar Emails
+                            </button>
+                            <button onclick="window.appActions.sendMassEmail('kronoDual')" class="flex-1 bg-purple-600 text-white text-xs font-bold py-2 rounded hover:bg-purple-500 transition flex justify-center items-center gap-1">
+                                <i data-lucide="send" class="h-3 w-3"></i> Redactar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -113,16 +152,34 @@
                         Cola de Envíos 
                         <span id="counter-pending" class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full">0</span>
                     </h2>
-                    <button id="btn-clear-all" class="text-xs text-red-400 hover:text-red-600 flex items-center gap-1 hidden">
-                        <i data-lucide="eraser" class="h-3 w-3"></i> Limpiar Todo
-                    </button>
+                    
+                    <!-- BARRA DE HERRAMIENTAS DE DATOS -->
+                    <div class="flex gap-2" id="data-tools">
+                        <input type="file" id="input-import-json" accept=".json" class="hidden">
+                        
+                        <button id="btn-backup-json" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded transition flex items-center gap-1 font-medium" title="Descargar Copia de Seguridad para llevar a GitHub">
+                            <i data-lucide="save" class="h-3 w-3"></i> Backup
+                        </button>
+                        
+                        <button id="btn-restore-json" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded transition flex items-center gap-1 font-medium" title="Cargar Copia de Seguridad">
+                            <i data-lucide="upload" class="h-3 w-3"></i> Restaurar
+                        </button>
+
+                        <button id="btn-export-csv" class="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 transition hidden font-medium ml-2">
+                            <i data-lucide="file-spreadsheet" class="h-3 w-3"></i> Excel
+                        </button>
+                        
+                        <button id="btn-clear-all" class="text-xs text-red-400 hover:text-red-600 flex items-center gap-1 hidden ml-1">
+                            <i data-lucide="eraser" class="h-3 w-3"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div id="contacts-list" class="grid gap-3"></div>
                 
                 <div id="empty-state" class="text-center py-12 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hidden">
                     <p class="text-gray-400 font-medium">Base de datos vacía.</p>
-                    <p class="text-sm text-gray-400 mt-1">Añade un cliente arriba para empezar.</p>
+                    <p class="text-sm text-gray-400 mt-1">Añade un cliente o Restaura una Copia de Seguridad.</p>
                 </div>
             </div>
         </div>
@@ -198,6 +255,70 @@
         let firebaseUser = null;
         let appId = 'slot-car-app';
 
+        // DATOS EXTRAÍDOS DE CAPTURAS
+        const IMPORTED_CONTACTS = [
+            // --- NUEVOS DETECTADOS EN CAPTURAS ---
+            {nombre: "Pepe Moren", email: "prismasal123@gmail.com", programa: "kronoDual"},
+            {nombre: "Rompe 4", email: "alejandrohg77@gmail.com", programa: "kronoDual"},
+            
+            // --- KRONO PERSONAL ---
+            {nombre: "Nacho Arur", email: "arceurrea@gmail.com", programa: "kronoPersonal"},
+            {nombre: "P Joao", email: "p.joao1@hotmail.com", programa: "kronoPersonal"},
+            {nombre: "J L R M", email: "jl.romu1@gmail.com", programa: "kronoPersonal"},
+            {nombre: "Sifri Perez", email: "sergi_sifri@hotmail.com", programa: "kronoPersonal"},
+            {nombre: "Juan calomarde martinez", email: "jcm_686@hotmail.com", programa: "kronoPersonal"},
+            {nombre: "Juan Antonio Jimenez", email: "juanjimez61@gmail.com", programa: "kronoPersonal"},
+            {nombre: "Albert Ruiz", email: "lbrtruiz1@gmail.com", programa: "kronoPersonal"},
+            {nombre: "Miguel Carrero Sanchez", email: "miguel.carrerosanchez@gmail.com", programa: "kronoPersonal"},
+            {nombre: "Javier Recaredo Benito", email: "recaredoz@gmail.com", programa: "kronoPersonal"},
+            {nombre: "Enrique Lopez Molina", email: "lopezmolinakike@gmail.com", programa: "kronoPersonal"},
+            {nombre: "Mora", email: "mora.prados@gmail.com", programa: "kronoPersonal"},
+            {nombre: "Lucio Ruiz", email: "oicul1967@gmail.com", programa: "kronoPersonal"},
+            {nombre: "Piolet Piolet", email: "piolet686@gmail.com", programa: "kronoPersonal"},
+            {nombre: "Rafa T.", email: "key_34@yahoo.es", programa: "kronoPersonal"},
+            {nombre: "Luis Martinez", email: "luanmare@gmail.com", programa: "kronoPersonal"},
+            {nombre: "Ignacio Cuadrado", email: "icuadradogutierrez@gmail.com", programa: "kronoPersonal"},
+            {nombre: "Dani Subirana Miquel", email: "subiroff@proton.me", programa: "kronoPersonal"},
+            {nombre: "JUAN LORENZO LANDE", email: "juanlandeirac@gmail.com", programa: "kronoPersonal"},
+            {nombre: "marcelo perez", email: "guerreros3@msn.com", programa: "kronoPersonal"},
+            {nombre: "José Mª Rodríguez Ingelmo", email: "ingelmojmr@gmail.com", programa: "kronoPersonal"},
+            {nombre: "Chema", email: "chema.pinilla@gmail.com", programa: "kronoPersonal"},
+            {nombre: "Jose Rodrigo Poggio", email: "poggius@gmail.com", programa: "kronoPersonal"},
+            {nombre: "Carlos Lopez", email: "carlos.g.lopez@gmail.com", programa: "kronoPersonal"},
+            
+            // --- KRONO DUAL ---
+            {nombre: "Jordi Perez", email: "jordipr11@gmail.com", programa: "kronoDual"},
+            {nombre: "Victor Guil", email: "vguilgaibar@gmail.com", programa: "kronoDual"},
+            {nombre: "Jose Jochezka", email: "jochezka@hotmail.com", programa: "kronoDual"},
+            {nombre: "MARCIAL MELGOSA", email: "massi.mc@hotmail.com", programa: "kronoDual"},
+            {nombre: "FRANCISCO JAVIER", email: "javi678acaro@gmail.com", programa: "kronoDual"},
+            {nombre: "Francisco Granado Veiga", email: "gatsuow@gmail.com", programa: "kronoDual"},
+            {nombre: "Vicente Coves Escolano", email: "labolse@hotmail.com", programa: "kronoDual"},
+            {nombre: "Manu Castaño", email: "albanuel123@gmail.com", programa: "kronoDual"}, // Email corregido según captura
+            {nombre: "Eduard gil abellan", email: "eduart555@hotmail.com", programa: "kronoDual"},
+            {nombre: "Fernando BARCA ROBLES", email: "barca.robles.f@gmail.com", programa: "kronoDual"},
+            {nombre: "Jaime Gonzalvez Oliva", email: "jaimegonzalvezoliva@gmail.com", programa: "kronoDual"},
+            {nombre: "Jacinto Pardo", email: "jacingas@gmail.com", programa: "kronoDual"},
+            {nombre: "Miquel Casals Tutau", email: "miquelcasals02@gmail.com", programa: "kronoDual"},
+
+            // --- MULTI-PROGRAMA (Javier, JP, Albert) ---
+            {nombre: "Javier Arcediano", email: "ediskrotas1987@gmail.com", programa: "kronoPersonal"},
+            {nombre: "Javier Arcediano", email: "ediskrotas1987@gmail.com", programa: "kronoDual"},
+            
+            {nombre: "J.P", email: "pixelesybugs@gmail.com", programa: "kronoPersonal"},
+            {nombre: "J.P", email: "pixelesybugs@gmail.com", programa: "kronoDual"},
+            
+            {nombre: "Albert", email: "albertclosa@yahoo.es", programa: "kronoDual"},
+            {nombre: "Albert", email: "albertclosa@yahoo.es", programa: "tracksTelemetry"}
+        ].map(c => ({
+            ...c,
+            id: 'imp_' + Math.random().toString(36).substr(2, 9),
+            asunto: `Info: ${c.programa === 'kronoPersonal' ? 'Krono Personal' : c.programa === 'kronoDual' ? 'KronoDual' : 'Tracks Telemetry'}`,
+            fecha: 'Importado',
+            estado: 'pendiente',
+            createdAt: { seconds: Date.now() / 1000 } // timestamp simulado
+        }));
+
         // Valores por defecto
         const DEFAULT_PLANTILLAS = {
             kronoPersonal: `Hola,\n\n¡Gracias por tu interés en KRONO PERSONAL!\n\nEs el gestor de tiempos ideal para entrenamientos individuales...`,
@@ -223,7 +344,10 @@
             editor: document.getElementById('template-editor'),
             viewBandeja: document.getElementById('view-bandeja'),
             viewConfig: document.getElementById('view-config'),
-            modal: document.getElementById('modal-overlay')
+            modal: document.getElementById('modal-overlay'),
+            inputImport: document.getElementById('input-import-json'),
+            countKp: document.getElementById('count-kp'),
+            countKd: document.getElementById('count-kd')
         };
 
         // --- INICIALIZACIÓN ---
@@ -287,8 +411,13 @@
             // Contactos
             onSnapshot(collection(firebaseDb, 'artifacts', appId, 'users', firebaseUser.uid, 'contacts'), (snap) => {
                 contactos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                contactos.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-                render();
+                // SI ESTÁ VACÍO, CARGAR DATOS IMPORTADOS
+                if(contactos.length === 0) {
+                   IMPORTED_CONTACTS.forEach(c => addContactCloud(c));
+                } else {
+                   contactos.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                   render();
+                }
             });
             // Plantillas
             onSnapshot(doc(firebaseDb, 'artifacts', appId, 'users', firebaseUser.uid, 'settings', 'templates'), (snap) => {
@@ -321,7 +450,14 @@
             const localContacts = localStorage.getItem('slot_contacts');
             const localTemplates = localStorage.getItem('slot_templates');
             
-            if (localContacts) contactos = JSON.parse(localContacts);
+            if (localContacts) {
+                contactos = JSON.parse(localContacts);
+            } else {
+                // PRIMERA CARGA: USAR DATOS IMPORTADOS DE CAPTURAS
+                contactos = [...IMPORTED_CONTACTS];
+                saveLocal();
+            }
+
             if (localTemplates) plantillas = JSON.parse(localTemplates);
             
             render();
@@ -363,14 +499,24 @@
             const pendientes = contactos.filter(c => c.estado === 'pendiente');
             dom.counter.textContent = pendientes.length;
             
-            // Botón Limpiar
+            // Actualizar Contadores Masivos
+            const kp = contactos.filter(c => c.programa === 'kronoPersonal' && c.estado === 'pendiente');
+            const kd = contactos.filter(c => c.programa === 'kronoDual' && c.estado === 'pendiente');
+            dom.countKp.textContent = kp.length;
+            dom.countKd.textContent = kd.length;
+
+            // Botones Herramientas
             const btnClear = document.getElementById('btn-clear-all');
+            const btnExport = document.getElementById('btn-export-csv');
+
             if(contactos.length > 0) {
                 dom.empty.classList.add('hidden');
                 btnClear.classList.remove('hidden');
+                btnExport.classList.remove('hidden');
             } else {
                 dom.empty.classList.remove('hidden');
                 btnClear.classList.add('hidden');
+                btnExport.classList.add('hidden');
             }
 
             contactos.forEach(c => {
@@ -440,8 +586,8 @@
             if (isConfig) {
                 dom.viewConfig.classList.add('hidden');
                 dom.viewBandeja.classList.remove('hidden');
-                document.getElementById('view-text').textContent = "Editar Plantillas";
-                btnView.innerHTML = `<i data-lucide="settings" class="h-4 w-4"></i> <span id="view-text">Editar Plantillas</span>`;
+                document.getElementById('view-text').textContent = "Configuración";
+                btnView.innerHTML = `<i data-lucide="settings" class="h-4 w-4"></i> <span id="view-text">Configuración</span>`;
             } else {
                 dom.viewBandeja.classList.add('hidden');
                 dom.viewConfig.classList.remove('hidden');
@@ -490,6 +636,85 @@
             }
         });
 
+        // --- SISTEMA BACKUP / IMPORTAR / EXPORTAR ---
+        
+        // 1. Exportar CSV (Excel)
+        document.getElementById('btn-export-csv').addEventListener('click', () => {
+            if (contactos.length === 0) { alert("No hay datos."); return; }
+            
+            const headers = ["ID", "Nombre", "Email", "Programa", "Fecha", "Estado"];
+            const escapeCSV = (f) => `"${String(f || "").replace(/"/g, '""')}"`;
+
+            const rows = contactos.map(c => [
+                c.id, c.nombre, c.email, getProgramInfo(c.programa).name, c.fecha, c.estado
+            ]);
+            const csvContent = [headers.join(","), ...rows.map(r => r.map(escapeCSV).join(","))].join("\n");
+            
+            downloadFile(csvContent, `contactos_slot_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv');
+        });
+
+        // 2. BACKUP JSON (Guardar todo)
+        document.getElementById('btn-backup-json').addEventListener('click', () => {
+            const backup = {
+                version: 1,
+                date: new Date().toISOString(),
+                contacts: contactos,
+                templates: plantillas
+            };
+            const jsonContent = JSON.stringify(backup, null, 2);
+            downloadFile(jsonContent, `BACKUP_SLOT_${new Date().toISOString().slice(0,10)}.json`, 'application/json');
+        });
+
+        // 3. RESTAURAR JSON (Cargar todo)
+        document.getElementById('btn-restore-json').addEventListener('click', () => {
+            if(contactos.length > 0 && !confirm("Esto SOBRESCRIBIRÁ tus contactos actuales. ¿Seguir?")) return;
+            dom.inputImport.click();
+        });
+
+        dom.inputImport.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    if(data.contacts && Array.isArray(data.contacts)) {
+                        contactos = data.contacts;
+                        if(data.templates) plantillas = data.templates;
+                        
+                        if(dbMode === 'LOCAL') {
+                            saveLocal();
+                            alert("✅ Backup restaurado correctamente. Tus datos están listos.");
+                        } else {
+                            // En modo Cloud es más complejo, lo simulamos recargando memoria
+                            // Idealmente habría que subir uno a uno a Firebase, pero por seguridad lo dejamos en memoria/local
+                            alert("Backup cargado en memoria. Para guardar permanentemente en Cloud, contacta con el administrador.");
+                        }
+                        render();
+                    } else {
+                        alert("❌ El archivo no parece un backup válido.");
+                    }
+                } catch(err) {
+                    alert("❌ Error al leer el archivo: " + err.message);
+                }
+                dom.inputImport.value = ''; // Reset
+            };
+            reader.readAsText(file);
+        });
+
+        function downloadFile(content, fileName, mimeType) {
+            const blob = new Blob([content], { type: `${mimeType};charset=utf-8;` });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+
         // --- ACCIONES GLOBALES (Window) ---
         window.appActions = {
             delete: async (id) => {
@@ -507,6 +732,34 @@
                 document.getElementById('modal-recipient').textContent = c.email;
                 document.getElementById('modal-body').textContent = plantillas[c.programa] || "";
                 dom.modal.classList.remove('hidden');
+            },
+            // NUEVO: FUNCIONES MASIVAS
+            copyMassEmails: (type) => {
+                const targets = contactos.filter(c => c.programa === type && c.estado === 'pendiente');
+                if(targets.length === 0) { alert("No hay destinatarios pendientes para este programa."); return; }
+                const emails = targets.map(c => c.email).join('; ');
+                navigator.clipboard.writeText(emails);
+                alert(`Copiados ${targets.length} emails al portapapeles. Pégalos en CCO.`);
+            },
+            sendMassEmail: (type) => {
+                const targets = contactos.filter(c => c.programa === type && c.estado === 'pendiente');
+                if(targets.length === 0) { alert("No hay destinatarios pendientes."); return; }
+                
+                const emails = targets.map(c => c.email).join(',');
+                const info = getProgramInfo(type);
+                const body = plantillas[type] || "Hola, adjuntamos información.";
+                
+                // Intento abrir cliente de correo con BCC
+                const link = `mailto:?bcc=${emails}&subject=${encodeURIComponent("Info: " + info.name)}&body=${encodeURIComponent(body)}`;
+                
+                window.open(link, '_blank');
+                
+                if(confirm("¿Marcar todos estos contactos como procesados?")) {
+                    targets.forEach(async c => {
+                         if (dbMode === 'CLOUD') await updateContactCloud(c.id, { estado: 'procesado' });
+                         else await updateContactLocal(c.id, { estado: 'procesado' });
+                    });
+                }
             }
         };
 
