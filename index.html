@@ -77,14 +77,14 @@
             <!-- PANEL ACCIONES MASIVAS (NUEVO) -->
             <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-5 rounded-2xl shadow-lg text-white">
                 <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wide mb-3 flex items-center gap-2">
-                    <i data-lucide="mail-plus" class="h-4 w-4"></i> Envío Masivo
+                    <i data-lucide="mail-plus" class="h-4 w-4"></i> Envío Masivo (A toda la lista)
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Krono Personal -->
                     <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
                         <div class="flex justify-between items-center mb-2">
                             <span class="font-bold text-blue-300 text-sm">Krono Personal</span>
-                            <span id="count-kp" class="bg-blue-900 text-blue-200 text-xs px-2 py-0.5 rounded-full">0</span>
+                            <span id="count-kp" class="bg-blue-900 text-blue-200 text-xs px-2 py-0.5 rounded-full" title="Total de clientes">0</span>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="window.appActions.copyMassEmails('kronoPersonal')" class="flex-1 bg-white text-slate-900 text-xs font-bold py-2 rounded hover:bg-blue-50 transition flex justify-center items-center gap-1">
@@ -99,7 +99,7 @@
                     <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
                         <div class="flex justify-between items-center mb-2">
                             <span class="font-bold text-purple-300 text-sm">KronoDual</span>
-                            <span id="count-kd" class="bg-purple-900 text-purple-200 text-xs px-2 py-0.5 rounded-full">0</span>
+                            <span id="count-kd" class="bg-purple-900 text-purple-200 text-xs px-2 py-0.5 rounded-full" title="Total de clientes">0</span>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="window.appActions.copyMassEmails('kronoDual')" class="flex-1 bg-white text-slate-900 text-xs font-bold py-2 rounded hover:bg-purple-50 transition flex justify-center items-center gap-1">
@@ -114,7 +114,7 @@
                     <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
                         <div class="flex justify-between items-center mb-2">
                             <span class="font-bold text-orange-300 text-sm">Tracks Telemetry</span>
-                            <span id="count-tt" class="bg-orange-900 text-orange-200 text-xs px-2 py-0.5 rounded-full">0</span>
+                            <span id="count-tt" class="bg-orange-900 text-orange-200 text-xs px-2 py-0.5 rounded-full" title="Total de clientes">0</span>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="window.appActions.copyMassEmails('tracksTelemetry')" class="flex-1 bg-white text-slate-900 text-xs font-bold py-2 rounded hover:bg-orange-50 transition flex justify-center items-center gap-1">
@@ -164,8 +164,8 @@
             <div>
                 <div class="flex justify-between items-end mb-3 px-1">
                     <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        Cola de Envíos 
-                        <span id="counter-pending" class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full">0</span>
+                        Total Contactos
+                        <span id="counter-pending" class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full" title="Contactos totales en la base de datos">0</span>
                     </h2>
                     
                     <!-- BARRA DE HERRAMIENTAS DE DATOS -->
@@ -269,70 +269,6 @@
         let firebaseDb = null;
         let firebaseUser = null;
         let appId = 'slot-car-app';
-
-        // DATOS EXTRAÍDOS DE CAPTURAS
-        const IMPORTED_CONTACTS = [
-            // --- NUEVOS DETECTADOS EN CAPTURAS ---
-            {nombre: "Pepe Moren", email: "prismasal123@gmail.com", programa: "kronoDual"},
-            {nombre: "Rompe 4", email: "alejandrohg77@gmail.com", programa: "kronoDual"},
-            
-            // --- KRONO PERSONAL ---
-            {nombre: "Nacho Arur", email: "arceurrea@gmail.com", programa: "kronoPersonal"},
-            {nombre: "P Joao", email: "p.joao1@hotmail.com", programa: "kronoPersonal"},
-            {nombre: "J L R M", email: "jl.romu1@gmail.com", programa: "kronoPersonal"},
-            {nombre: "Sifri Perez", email: "sergi_sifri@hotmail.com", programa: "kronoPersonal"},
-            {nombre: "Juan calomarde martinez", email: "jcm_686@hotmail.com", programa: "kronoPersonal"},
-            {nombre: "Juan Antonio Jimenez", email: "juanjimez61@gmail.com", programa: "kronoPersonal"},
-            {nombre: "Albert Ruiz", email: "lbrtruiz1@gmail.com", programa: "kronoPersonal"},
-            {nombre: "Miguel Carrero Sanchez", email: "miguel.carrerosanchez@gmail.com", programa: "kronoPersonal"},
-            {nombre: "Javier Recaredo Benito", email: "recaredoz@gmail.com", programa: "kronoPersonal"},
-            {nombre: "Enrique Lopez Molina", email: "lopezmolinakike@gmail.com", programa: "kronoPersonal"},
-            {nombre: "Mora", email: "mora.prados@gmail.com", programa: "kronoPersonal"},
-            {nombre: "Lucio Ruiz", email: "oicul1967@gmail.com", programa: "kronoPersonal"},
-            {nombre: "Piolet Piolet", email: "piolet686@gmail.com", programa: "kronoPersonal"},
-            {nombre: "Rafa T.", email: "key_34@yahoo.es", programa: "kronoPersonal"},
-            {nombre: "Luis Martinez", email: "luanmare@gmail.com", programa: "kronoPersonal"},
-            {nombre: "Ignacio Cuadrado", email: "icuadradogutierrez@gmail.com", programa: "kronoPersonal"},
-            {nombre: "Dani Subirana Miquel", email: "subiroff@proton.me", programa: "kronoPersonal"},
-            {nombre: "JUAN LORENZO LANDE", email: "juanlandeirac@gmail.com", programa: "kronoPersonal"},
-            {nombre: "marcelo perez", email: "guerreros3@msn.com", programa: "kronoPersonal"},
-            {nombre: "José Mª Rodríguez Ingelmo", email: "ingelmojmr@gmail.com", programa: "kronoPersonal"},
-            {nombre: "Chema", email: "chema.pinilla@gmail.com", programa: "kronoPersonal"},
-            {nombre: "Jose Rodrigo Poggio", email: "poggius@gmail.com", programa: "kronoPersonal"},
-            {nombre: "Carlos Lopez", email: "carlos.g.lopez@gmail.com", programa: "kronoPersonal"},
-            
-            // --- KRONO DUAL ---
-            {nombre: "Jordi Perez", email: "jordipr11@gmail.com", programa: "kronoDual"},
-            {nombre: "Victor Guil", email: "vguilgaibar@gmail.com", programa: "kronoDual"},
-            {nombre: "Jose Jochezka", email: "jochezka@hotmail.com", programa: "kronoDual"},
-            {nombre: "MARCIAL MELGOSA", email: "massi.mc@hotmail.com", programa: "kronoDual"},
-            {nombre: "FRANCISCO JAVIER", email: "javi678acaro@gmail.com", programa: "kronoDual"},
-            {nombre: "Francisco Granado Veiga", email: "gatsuow@gmail.com", programa: "kronoDual"},
-            {nombre: "Vicente Coves Escolano", email: "labolse@hotmail.com", programa: "kronoDual"},
-            {nombre: "Manu Castaño", email: "albanuel123@gmail.com", programa: "kronoDual"}, // Email corregido según captura
-            {nombre: "Eduard gil abellan", email: "eduart555@hotmail.com", programa: "kronoDual"},
-            {nombre: "Fernando BARCA ROBLES", email: "barca.robles.f@gmail.com", programa: "kronoDual"},
-            {nombre: "Jaime Gonzalvez Oliva", email: "jaimegonzalvezoliva@gmail.com", programa: "kronoDual"},
-            {nombre: "Jacinto Pardo", email: "jacingas@gmail.com", programa: "kronoDual"},
-            {nombre: "Miquel Casals Tutau", email: "miquelcasals02@gmail.com", programa: "kronoDual"},
-
-            // --- MULTI-PROGRAMA (Javier, JP, Albert) ---
-            {nombre: "Javier Arcediano", email: "ediskrotas1987@gmail.com", programa: "kronoPersonal"},
-            {nombre: "Javier Arcediano", email: "ediskrotas1987@gmail.com", programa: "kronoDual"},
-            
-            {nombre: "J.P", email: "pixelesybugs@gmail.com", programa: "kronoPersonal"},
-            {nombre: "J.P", email: "pixelesybugs@gmail.com", programa: "kronoDual"},
-            
-            {nombre: "Albert", email: "albertclosa@yahoo.es", programa: "kronoDual"},
-            {nombre: "Albert", email: "albertclosa@yahoo.es", programa: "tracksTelemetry"}
-        ].map(c => ({
-            ...c,
-            id: 'imp_' + Math.random().toString(36).substr(2, 9),
-            asunto: `Info: ${c.programa === 'kronoPersonal' ? 'Krono Personal' : c.programa === 'kronoDual' ? 'KronoDual' : 'Tracks Telemetry'}`,
-            fecha: 'Importado',
-            estado: 'pendiente',
-            createdAt: { seconds: Date.now() / 1000 } // timestamp simulado
-        }));
 
         // Valores por defecto
         const DEFAULT_PLANTILLAS = {
@@ -440,13 +376,8 @@
                     const data = d.data();
                     return { id: d.id, ...data, programa: normalizePrograma(data.programa) };
                 });
-                // SI ESTÁ VACÍO, CARGAR DATOS IMPORTADOS
-                if(contactos.length === 0) {
-                   IMPORTED_CONTACTS.forEach(c => addContactCloud(c));
-                } else {
-                   contactos.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-                   render();
-                }
+                contactos.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                render();
             });
             // Plantillas
             onSnapshot(doc(firebaseDb, 'artifacts', appId, 'users', firebaseUser.uid, 'settings', 'templates'), (snap) => {
@@ -481,13 +412,9 @@
             
             if (localContacts) {
                 const parsed = JSON.parse(localContacts);
-                // Normalizar datos antiguos para asegurar que los contadores funcionen
+                // Normalizar datos antiguos
                 contactos = parsed.map(c => ({...c, programa: normalizePrograma(c.programa)}));
-                localStorage.setItem('slot_contacts', JSON.stringify(contactos)); // Guardar correcciones
-            } else {
-                // PRIMERA CARGA: USAR DATOS IMPORTADOS DE CAPTURAS
-                contactos = [...IMPORTED_CONTACTS];
-                saveLocal();
+                localStorage.setItem('slot_contacts', JSON.stringify(contactos));
             }
 
             if (localTemplates) plantillas = JSON.parse(localTemplates);
@@ -522,19 +449,20 @@
         }
 
         async function saveTemplatesLocal() {
-            saveLocal(); // Las plantillas ya se actualizan en la variable global antes de llamar a esto
+            saveLocal(); 
         }
 
         // --- RENDER ---
         function render() {
             dom.list.innerHTML = '';
-            const pendientes = contactos.filter(c => c.estado === 'pendiente');
-            dom.counter.textContent = pendientes.length;
             
-            // Actualizar Contadores Masivos
-            const kp = contactos.filter(c => c.programa === 'kronoPersonal' && c.estado === 'pendiente');
-            const kd = contactos.filter(c => c.programa === 'kronoDual' && c.estado === 'pendiente');
-            const tt = contactos.filter(c => c.programa === 'tracksTelemetry' && c.estado === 'pendiente');
+            // AHORA CUENTA TODOS, NO SOLO LOS PENDIENTES
+            dom.counter.textContent = contactos.length;
+            
+            // Actualizar Contadores Masivos (TODOS LOS CONTACTOS)
+            const kp = contactos.filter(c => c.programa === 'kronoPersonal');
+            const kd = contactos.filter(c => c.programa === 'kronoDual');
+            const tt = contactos.filter(c => c.programa === 'tracksTelemetry');
             dom.countKp.textContent = kp.length;
             dom.countKd.textContent = kd.length;
             dom.countTt.textContent = tt.length;
@@ -558,6 +486,7 @@
                 const info = getProgramInfo(c.programa);
                 const isDone = c.estado === 'procesado';
                 
+                // Mantenemos el estilo verde para los procesados en la lista individual
                 el.className = `bg-white rounded-xl p-5 shadow-sm border-l-4 transition-all ${isDone ? 'border-green-400 bg-gray-50 opacity-60' : 'border-slate-800'}`;
                 el.innerHTML = `
                     <div class="flex justify-between items-start mb-3">
@@ -722,8 +651,6 @@
                             saveLocal();
                             alert("✅ Backup restaurado correctamente. Tus datos están listos.");
                         } else {
-                            // En modo Cloud es más complejo, lo simulamos recargando memoria
-                            // Idealmente habría que subir uno a uno a Firebase, pero por seguridad lo dejamos en memoria/local
                             alert("Backup cargado en memoria. Para guardar permanentemente en Cloud, contacta con el administrador.");
                         }
                         render();
@@ -768,17 +695,21 @@
                 document.getElementById('modal-body').textContent = plantillas[c.programa] || "";
                 dom.modal.classList.remove('hidden');
             },
-            // NUEVO: FUNCIONES MASIVAS
+            
+            // NUEVO: FUNCIONES MASIVAS MODIFICADAS
             copyMassEmails: (type) => {
-                const targets = contactos.filter(c => c.programa === type && c.estado === 'pendiente');
-                if(targets.length === 0) { alert("No hay destinatarios pendientes para este programa."); return; }
+                // Ahora coge a TODOS los que coincidan con el programa, sin importar su estado
+                const targets = contactos.filter(c => c.programa === type);
+                if(targets.length === 0) { alert("No hay destinatarios para este programa."); return; }
                 const emails = targets.map(c => c.email).join('; ');
                 navigator.clipboard.writeText(emails);
-                alert(`Copiados ${targets.length} emails al portapapeles. Pégalos en CCO.`);
+                alert(`Copiados ${targets.length} emails al portapapeles. Pégalos en CCO de tu gestor de correo.`);
             },
+            
             sendMassEmail: (type) => {
-                const targets = contactos.filter(c => c.programa === type && c.estado === 'pendiente');
-                if(targets.length === 0) { alert("No hay destinatarios pendientes."); return; }
+                // Ahora coge a TODOS los que coincidan con el programa, sin importar su estado
+                const targets = contactos.filter(c => c.programa === type);
+                if(targets.length === 0) { alert("No hay destinatarios."); return; }
                 
                 const emails = targets.map(c => c.email).join(',');
                 const info = getProgramInfo(type);
@@ -789,7 +720,7 @@
                 
                 window.open(link, '_blank');
                 
-                if(confirm("¿Marcar todos estos contactos como procesados?")) {
+                if(confirm("¿Marcar todos estos contactos como procesados en la lista? (Solo afectará visualmente)")) {
                     targets.forEach(async c => {
                          if (dbMode === 'CLOUD') await updateContactCloud(c.id, { estado: 'procesado' });
                          else await updateContactLocal(c.id, { estado: 'procesado' });
