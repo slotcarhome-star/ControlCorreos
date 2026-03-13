@@ -229,6 +229,17 @@
                         <i data-lucide="save" class="h-5 w-5"></i> Guardar Cambios
                     </button>
                 </div>
+                
+                <!-- ZONA AVANZADA -->
+                <div class="p-6 pt-0 border-t mt-2 bg-gray-50/50 rounded-b-xl">
+                    <h3 class="text-sm font-bold text-red-500 mb-2 flex items-center gap-2">
+                        <i data-lucide="alert-triangle" class="h-4 w-4"></i> Mantenimiento y Actualizaciones
+                    </h3>
+                    <p class="text-xs text-gray-500 mb-3 leading-relaxed">Si has actualizado el código en GitHub (ej. añadiendo nuevos clientes) y no ves los cambios en tu tablet o móvil, usa este botón. <strong class="text-red-500">Recuerda hacer un Backup antes</strong> si tienes datos importantes que no has guardado.</p>
+                    <button id="btn-force-reload" class="w-full bg-white text-red-600 py-3 rounded-lg font-bold hover:bg-red-50 transition flex justify-center items-center gap-2 border border-red-200 text-sm shadow-sm">
+                        <i data-lucide="refresh-cw" class="h-4 w-4"></i> Forzar Recarga de Código
+                    </button>
+                </div>
             </div>
         </div>
     </main>
@@ -640,6 +651,15 @@
             else await saveTemplatesLocal();
             
             alert('Plantilla guardada correctamente');
+        });
+
+        // Botón Forzar Recarga (Zona Avanzada)
+        document.getElementById('btn-force-reload').addEventListener('click', () => {
+            if(confirm("⚠️ ATENCIÓN: ¿Seguro que quieres borrar la memoria local y recargar? \n\nSi tienes contactos nuevos en esta tablet, DESCARGA UN BACKUP antes de continuar o los perderás.")) {
+                localStorage.removeItem('slot_contacts');
+                localStorage.removeItem('slot_templates');
+                window.location.reload(true);
+            }
         });
 
         // Botón Limpiar Todo
