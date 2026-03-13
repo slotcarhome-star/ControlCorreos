@@ -79,7 +79,7 @@
                 <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <i data-lucide="mail-plus" class="h-4 w-4"></i> Envío Masivo
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Krono Personal -->
                     <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
                         <div class="flex justify-between items-center mb-2">
@@ -106,6 +106,21 @@
                                 <i data-lucide="copy" class="h-3 w-3"></i> Copiar Emails
                             </button>
                             <button onclick="window.appActions.sendMassEmail('kronoDual')" class="flex-1 bg-purple-600 text-white text-xs font-bold py-2 rounded hover:bg-purple-500 transition flex justify-center items-center gap-1">
+                                <i data-lucide="send" class="h-3 w-3"></i> Redactar
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Tracks Telemetry -->
+                    <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-orange-300 text-sm">Tracks Telemetry</span>
+                            <span id="count-tt" class="bg-orange-900 text-orange-200 text-xs px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="window.appActions.copyMassEmails('tracksTelemetry')" class="flex-1 bg-white text-slate-900 text-xs font-bold py-2 rounded hover:bg-orange-50 transition flex justify-center items-center gap-1">
+                                <i data-lucide="copy" class="h-3 w-3"></i> Copiar
+                            </button>
+                            <button onclick="window.appActions.sendMassEmail('tracksTelemetry')" class="flex-1 bg-orange-600 text-white text-xs font-bold py-2 rounded hover:bg-orange-500 transition flex justify-center items-center gap-1">
                                 <i data-lucide="send" class="h-3 w-3"></i> Redactar
                             </button>
                         </div>
@@ -347,7 +362,8 @@
             modal: document.getElementById('modal-overlay'),
             inputImport: document.getElementById('input-import-json'),
             countKp: document.getElementById('count-kp'),
-            countKd: document.getElementById('count-kd')
+            countKd: document.getElementById('count-kd'),
+            countTt: document.getElementById('count-tt')
         };
 
         // --- INICIALIZACIÓN ---
@@ -502,8 +518,10 @@
             // Actualizar Contadores Masivos
             const kp = contactos.filter(c => c.programa === 'kronoPersonal' && c.estado === 'pendiente');
             const kd = contactos.filter(c => c.programa === 'kronoDual' && c.estado === 'pendiente');
+            const tt = contactos.filter(c => c.programa === 'tracksTelemetry' && c.estado === 'pendiente');
             dom.countKp.textContent = kp.length;
             dom.countKd.textContent = kd.length;
+            dom.countTt.textContent = tt.length;
 
             // Botones Herramientas
             const btnClear = document.getElementById('btn-clear-all');
