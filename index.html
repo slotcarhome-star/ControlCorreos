@@ -459,10 +459,10 @@
             // AHORA CUENTA TODOS, NO SOLO LOS PENDIENTES
             dom.counter.textContent = contactos.length;
             
-            // Actualizar Contadores Masivos (TODOS LOS CONTACTOS)
-            const kp = contactos.filter(c => c.programa === 'kronoPersonal');
-            const kd = contactos.filter(c => c.programa === 'kronoDual');
-            const tt = contactos.filter(c => c.programa === 'tracksTelemetry');
+            // Actualizar Contadores Masivos (SOLO PENDIENTES PARA EVITAR RE-ENVIOS)
+            const kp = contactos.filter(c => c.programa === 'kronoPersonal' && c.estado !== 'procesado');
+            const kd = contactos.filter(c => c.programa === 'kronoDual' && c.estado !== 'procesado');
+            const tt = contactos.filter(c => c.programa === 'tracksTelemetry' && c.estado !== 'procesado');
             dom.countKp.textContent = kp.length;
             dom.countKd.textContent = kd.length;
             dom.countTt.textContent = tt.length;
@@ -696,21 +696,27 @@
                 dom.modal.classList.remove('hidden');
             },
             
-            // NUEVO: FUNCIONES MASIVAS MODIFICADAS
+            // NUEVO: FUNCIONES MASIVAS MODIFICADAS CON ALERTAS DE PRIVACIDAD
             copyMassEmails: (type) => {
-                // Ahora coge a TODOS los que coincidan con el programa, sin importar su estado
-                const targets = contactos.filter(c => c.programa === type);
-                if(targets.length === 0) { alert("No hay destinatarios para este programa."); return; }
+                // Coger SOLO los pendientes (evitar enviar a procesados)
+                const targets = contactos.filter(c => c.programa === type && c.estado !== 'procesado');
+                if(targets.length === 0) { alert("No hay destinatarios pendientes para este programa."); return; }
                 const emails = targets.map(c => c.email).join('; ');
                 navigator.clipboard.writeText(emails);
-                alert(`Copiados ${targets.length} emails al portapapeles. Pégalos en CCO de tu gestor de correo.`);
+                
+                // ALERTA DE SEGURIDAD LOPD
+                alert(`⚠️ ¡ATENCIÓN A LA PRIVACIDAD!\n\nSe han copiado ${targets.length} emails.\n\nEs OBLIGATORIO que los pegues en la casilla CCO (Copia Oculta) de tu gestor de correo para no revelar los datos de los clientes a otras personas.`);
             },
             
             sendMassEmail: (type) => {
-                // Ahora coge a TODOS los que coincidan con el programa, sin importar su estado
-                const targets = contactos.filter(c => c.programa === type);
-                if(targets.length === 0) { alert("No hay destinatarios."); return; }
+                // Coger SOLO los pendientes (evitar enviar a procesados)
+                const targets = contactos.filter(c => c.programa === type && c.estado !== 'procesado');
+                if(targets.length === 0) { alert("No hay destinatarios pendientes."); return; }
                 
+                // CONFIRMACIÓN DE SEGURIDAD ANTES DE ABRIR EL CORREO
+                const proceed = confirm("⚠️ AVISO DE PRIVACIDAD (LOPD):\n\nEl sistema intentará colocar los correos en CCO (Copia Oculta). Sin embargo, algunos programas de correo fallan y los ponen en 'Para' (visibles para todos).\n\nPOR FAVOR, REVISA QUE ESTÉN EN CCO ANTES DE ENVIAR.\n\n¿Quieres continuar y abrir tu gestor de correo?");
+                if(!proceed) return;
+
                 const emails = targets.map(c => c.email).join(',');
                 const info = getProgramInfo(type);
                 const body = plantillas[type] || "Hola, adjuntamos información.";
@@ -720,12 +726,15 @@
                 
                 window.open(link, '_blank');
                 
-                if(confirm("¿Marcar todos estos contactos como procesados en la lista? (Solo afectará visualmente)")) {
-                    targets.forEach(async c => {
-                         if (dbMode === 'CLOUD') await updateContactCloud(c.id, { estado: 'procesado' });
-                         else await updateContactLocal(c.id, { estado: 'procesado' });
-                    });
-                }
+                // PREGUNTAR ANTES DE MARCAR COMO PROCESADOS
+                setTimeout(() => {
+                    if(confirm("¿Los correos estaban correctamente ocultos (en CCO) y ya los has enviado?\n\nSi pulsas Aceptar, se marcarán como 'Procesados' en la lista.")) {
+                        targets.forEach(async c => {
+                             if (dbMode === 'CLOUD') await updateContactCloud(c.id, { estado: 'procesado' });
+                             else await updateContactLocal(c.id, { estado: 'procesado' });
+                        });
+                    }
+                }, 1000);
             }
         };
 
