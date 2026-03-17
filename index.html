@@ -84,7 +84,7 @@
                     <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
                         <div class="flex justify-between items-center mb-2">
                             <span class="font-bold text-blue-300 text-sm">Krono Personal</span>
-                            <span id="count-kp" class="bg-blue-900 text-blue-200 text-xs px-2 py-0.5 rounded-full" title="Clientes con licencia">0</span>
+                            <span id="count-kp" class="bg-blue-900 text-blue-200 text-xs px-2 py-0.5 rounded-full" title="Contactos con licencia activa">0</span>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="window.appActions.copyMassEmails('kronoPersonal')" class="flex-1 bg-white text-slate-900 text-xs font-bold py-2 rounded hover:bg-blue-50 transition flex justify-center items-center gap-1">
@@ -99,7 +99,7 @@
                     <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
                         <div class="flex justify-between items-center mb-2">
                             <span class="font-bold text-purple-300 text-sm">KronoDual</span>
-                            <span id="count-kd" class="bg-purple-900 text-purple-200 text-xs px-2 py-0.5 rounded-full" title="Clientes con licencia">0</span>
+                            <span id="count-kd" class="bg-purple-900 text-purple-200 text-xs px-2 py-0.5 rounded-full" title="Contactos con licencia activa">0</span>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="window.appActions.copyMassEmails('kronoDual')" class="flex-1 bg-white text-slate-900 text-xs font-bold py-2 rounded hover:bg-purple-50 transition flex justify-center items-center gap-1">
@@ -114,7 +114,7 @@
                     <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
                         <div class="flex justify-between items-center mb-2">
                             <span class="font-bold text-orange-300 text-sm">Tracks Telemetry</span>
-                            <span id="count-tt" class="bg-orange-900 text-orange-200 text-xs px-2 py-0.5 rounded-full" title="Clientes con licencia">0</span>
+                            <span id="count-tt" class="bg-orange-900 text-orange-200 text-xs px-2 py-0.5 rounded-full" title="Contactos con licencia activa">0</span>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="window.appActions.copyMassEmails('tracksTelemetry')" class="flex-1 bg-white text-slate-900 text-xs font-bold py-2 rounded hover:bg-orange-50 transition flex justify-center items-center gap-1">
@@ -129,7 +129,7 @@
                     <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
                         <div class="flex justify-between items-center mb-2">
                             <span class="font-bold text-emerald-300 text-sm">Actualizaciones</span>
-                            <span id="count-ac" class="bg-emerald-900 text-emerald-200 text-xs px-2 py-0.5 rounded-full" title="Clientes con licencia">0</span>
+                            <span id="count-ac" class="bg-emerald-900 text-emerald-200 text-xs px-2 py-0.5 rounded-full" title="Contactos con licencia activa">0</span>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="window.appActions.copyMassEmails('actualizaciones')" class="flex-1 bg-white text-slate-900 text-xs font-bold py-2 rounded hover:bg-emerald-50 transition flex justify-center items-center gap-1">
@@ -160,14 +160,22 @@
                         </div>
                     </div>
                     
-                    <div class="flex gap-2 items-center bg-gray-50 p-2 rounded-lg border border-gray-200">
-                        <span class="text-sm font-bold text-gray-500 pl-2">Interesado en:</span>
-                        <select id="input-programa" class="flex-1 bg-transparent border-none p-2 focus:ring-0 font-medium text-slate-800 cursor-pointer outline-none">
-                            <option value="kronoPersonal">🏁 Krono Personal</option>
-                            <option value="kronoDual">⚡ KronoDual (1vs1)</option>
-                            <option value="tracksTelemetry">📊 Tracks Telemetry</option>
-                            <option value="actualizaciones">📢 Actualizaciones</option>
-                        </select>
+                    <div class="flex flex-col sm:flex-row gap-3 items-stretch">
+                        <div class="flex gap-2 items-center bg-gray-50 p-2 rounded-lg border border-gray-200 flex-1">
+                            <span class="text-sm font-bold text-gray-500 pl-2">Interesado en:</span>
+                            <select id="input-programa" class="flex-1 bg-transparent border-none p-2 focus:ring-0 font-medium text-slate-800 cursor-pointer outline-none">
+                                <option value="kronoPersonal">🏁 Krono Personal</option>
+                                <option value="kronoDual">⚡ KronoDual (1vs1)</option>
+                                <option value="tracksTelemetry">📊 Tracks Telemetry</option>
+                                <option value="actualizaciones">📢 Actualizaciones</option>
+                            </select>
+                        </div>
+                        <label class="flex items-center gap-2 cursor-pointer bg-slate-50 border border-slate-200 px-4 py-2 rounded-lg hover:bg-emerald-50 hover:border-emerald-200 transition select-none group">
+                            <input type="checkbox" id="input-has-license" class="w-5 h-5 text-emerald-600 rounded cursor-pointer focus:ring-emerald-500 border-gray-300">
+                            <span class="text-sm font-bold text-slate-600 group-hover:text-emerald-700 transition flex items-center gap-1.5">
+                                <i data-lucide="shield" class="h-4 w-4"></i> Tiene Licencia
+                            </span>
+                        </label>
                     </div>
 
                     <button type="submit" class="mt-1 bg-yellow-400 text-yellow-900 font-bold px-6 py-3 rounded-lg hover:bg-yellow-500 transition shadow-sm flex items-center justify-center gap-2">
@@ -477,11 +485,23 @@
         }
 
         async function updateContactCloud(id, data) {
-            await updateDoc(doc(firebaseDb, 'artifacts', appId, 'users', firebaseUser.uid, 'contacts', id), data);
+            try {
+                await updateDoc(doc(firebaseDb, 'artifacts', appId, 'users', firebaseUser.uid, 'contacts', id), data);
+            } catch (error) {
+                console.warn("Documento no encontrado para actualizar. Creándolo a partir de los datos locales...", error);
+                const contact = contactos.find(c => c.id === id);
+                if (contact) {
+                    await setDoc(doc(firebaseDb, 'artifacts', appId, 'users', firebaseUser.uid, 'contacts', id), { ...contact, ...data });
+                }
+            }
         }
 
         async function deleteContactCloud(id) {
-            await deleteDoc(doc(firebaseDb, 'artifacts', appId, 'users', firebaseUser.uid, 'contacts', id));
+            try {
+                await deleteDoc(doc(firebaseDb, 'artifacts', appId, 'users', firebaseUser.uid, 'contacts', id));
+            } catch (error) {
+                console.warn("Documento no encontrado al intentar borrar:", error);
+            }
         }
 
         async function saveTemplatesCloud() {
@@ -543,7 +563,7 @@
             // AHORA CUENTA TODOS, NO SOLO LOS PENDIENTES
             dom.counter.textContent = contactos.length;
             
-            // Actualizar Contadores Masivos (Contar los que tienen licencia activa)
+            // Actualizar Contadores Masivos (Contar SOLO los que tienen licencia)
             const kp = contactos.filter(c => c.programa === 'kronoPersonal' && c.hasLicense);
             const kd = contactos.filter(c => c.programa === 'kronoDual' && c.hasLicense);
             const tt = contactos.filter(c => c.programa === 'tracksTelemetry' && c.hasLicense);
@@ -598,10 +618,12 @@
                                     <div class="flex items-center gap-2 mb-1 flex-wrap">
                                         <h3 class="font-bold text-lg text-gray-900 leading-none">${escapeHtml(c.nombre)}</h3>
                                         <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${info.color}">${info.name}</span>
-                                        <button onclick="window.appActions.toggleLicense('${c.id}', ${!!c.hasLicense})" title="Click para cambiar estado de licencia" class="flex items-center text-xs font-bold uppercase px-3 py-1 rounded border transition-colors cursor-pointer ${c.hasLicense ? 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-slate-100 hover:text-slate-600' : 'bg-slate-100 text-slate-500 border-slate-300 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'}">
-                                            <i data-lucide="${c.hasLicense ? 'shield-check' : 'shield'}" class="h-4 w-4 mr-1.5"></i>
-                                            ${c.hasLicense ? 'Licencia Activa' : 'Verificar Licencia'}
-                                        </button>
+                                        <label class="flex items-center gap-1.5 ml-1 cursor-pointer bg-slate-50 border border-slate-200 px-2 py-1 rounded-md hover:bg-slate-100 transition select-none">
+                                            <input type="checkbox" onchange="window.appActions.setLicense('${c.id}', this.checked)" ${c.hasLicense ? 'checked' : ''} class="w-3.5 h-3.5 text-emerald-600 rounded cursor-pointer focus:ring-emerald-500 border-gray-300">
+                                            <span class="text-xs font-bold uppercase ${c.hasLicense ? 'text-emerald-700' : 'text-slate-500'}">
+                                                ${c.hasLicense ? '<i data-lucide="shield-check" class="h-3 w-3 inline mb-0.5 mr-0.5"></i>Licencia' : '<i data-lucide="shield" class="h-3 w-3 inline mb-0.5 mr-0.5"></i>Sin Licencia'}
+                                            </span>
+                                        </label>
                                     </div>
                                     <p class="text-sm text-gray-500 font-mono">${escapeHtml(c.email)}</p>
                                 </div>
@@ -636,6 +658,7 @@
             const nombre = document.getElementById('input-nombre').value;
             const rawPrograma = document.getElementById('input-programa').value;
             const programa = normalizePrograma(rawPrograma); // Asegurar formato estricto
+            const hasLicense = document.getElementById('input-has-license').checked;
             
             if(!email) return;
 
@@ -643,7 +666,8 @@
                 email, nombre: nombre || 'Usuario', programa,
                 asunto: `Info: ${getProgramInfo(programa).name}`,
                 fecha: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),
-                estado: 'pendiente'
+                estado: 'pendiente',
+                hasLicense: hasLicense
             };
 
             if (dbMode === 'CLOUD') await addContactCloud(data);
@@ -741,7 +765,7 @@
 
         // 3. RESTAURAR JSON (Cargar todo)
         document.getElementById('btn-restore-json').addEventListener('click', () => {
-            if(contactos.length > 0 && !confirm("Esto SOBRESCRIBIRÁ tus contactos actuales. ¿Seguir?")) return;
+            if(contactos.length > 0 && !confirm("Esto SOBRESCRIBIRÁ tus contactos actuales en pantalla. ¿Seguir?")) return;
             dom.inputImport.click();
         });
 
@@ -754,16 +778,33 @@
                 try {
                     const data = JSON.parse(event.target.result);
                     if(data.contacts && Array.isArray(data.contacts)) {
-                        contactos = data.contacts;
-                        if(data.templates) plantillas = data.templates;
-                        
                         if(dbMode === 'LOCAL') {
+                            contactos = data.contacts;
+                            if(data.templates) plantillas = data.templates;
                             saveLocal();
                             alert("✅ Backup restaurado correctamente. Tus datos están listos.");
+                            render();
                         } else {
-                            alert("Backup cargado en memoria. Para guardar permanentemente en Cloud, contacta con el administrador.");
+                            if(confirm("Estás en modo Cloud. ¿Deseas subir todos los contactos de este backup a tu base de datos en la nube? (Los datos existentes con el mismo ID se actualizarán)")) {
+                                const btn = document.getElementById('btn-restore-json');
+                                const originalHtml = btn.innerHTML;
+                                btn.innerHTML = `<i data-lucide="loader-2" class="h-3 w-3 animate-spin"></i> Subiendo...`;
+                                
+                                const promises = data.contacts.map(c => {
+                                    return setDoc(doc(firebaseDb, 'artifacts', appId, 'users', firebaseUser.uid, 'contacts', c.id), c);
+                                });
+                                
+                                if (data.templates) {
+                                    plantillas = data.templates;
+                                    promises.push(saveTemplatesCloud());
+                                }
+                                
+                                await Promise.all(promises);
+                                btn.innerHTML = originalHtml;
+                                alert("✅ Backup importado y subido a la nube correctamente.");
+                                lucide.createIcons();
+                            }
                         }
-                        render();
                     } else {
                         alert("❌ El archivo no parece un backup válido.");
                     }
@@ -790,10 +831,9 @@
         // --- ACCIONES GLOBALES (Window) ---
         window.appActions = {
             // NUEVA FUNCIÓN: Toggle Licencia Manual
-            toggleLicense: async (id, currentState) => {
-                const newState = !currentState;
-                if (dbMode === 'CLOUD') await updateContactCloud(id, { hasLicense: newState });
-                else await updateContactLocal(id, { hasLicense: newState });
+            setLicense: async (id, isChecked) => {
+                if (dbMode === 'CLOUD') await updateContactCloud(id, { hasLicense: isChecked });
+                else await updateContactLocal(id, { hasLicense: isChecked });
             },
 
             // NUEVAS FUNCIONES MASIVAS
