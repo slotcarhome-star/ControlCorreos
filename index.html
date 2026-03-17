@@ -79,7 +79,7 @@
                 <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <i data-lucide="mail-plus" class="h-4 w-4"></i> Envío Masivo (A toda la lista)
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- Krono Personal -->
                     <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
                         <div class="flex justify-between items-center mb-2">
@@ -125,6 +125,21 @@
                             </button>
                         </div>
                     </div>
+                    <!-- Actualizaciones -->
+                    <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-emerald-300 text-sm">Actualizaciones</span>
+                            <span id="count-ac" class="bg-emerald-900 text-emerald-200 text-xs px-2 py-0.5 rounded-full" title="Total de clientes">0</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="window.appActions.copyMassEmails('actualizaciones')" class="flex-1 bg-white text-slate-900 text-xs font-bold py-2 rounded hover:bg-emerald-50 transition flex justify-center items-center gap-1">
+                                <i data-lucide="copy" class="h-3 w-3"></i> Copiar
+                            </button>
+                            <button onclick="window.appActions.sendMassEmail('actualizaciones')" class="flex-1 bg-emerald-600 text-white text-xs font-bold py-2 rounded hover:bg-emerald-500 transition flex justify-center items-center gap-1">
+                                <i data-lucide="send" class="h-3 w-3"></i> Redactar
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -151,6 +166,7 @@
                             <option value="kronoPersonal">🏁 Krono Personal</option>
                             <option value="kronoDual">⚡ KronoDual (1vs1)</option>
                             <option value="tracksTelemetry">📊 Tracks Telemetry</option>
+                            <option value="actualizaciones">📢 Actualizaciones</option>
                         </select>
                     </div>
 
@@ -184,10 +200,48 @@
                             <i data-lucide="file-spreadsheet" class="h-3 w-3"></i> Excel
                         </button>
                         
+                        <!-- NUEVO: Botón Verificar Imagen -->
+                        <input type="file" id="input-verify-image" accept="image/*" class="hidden">
+                        <button id="btn-verify-image" class="text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-2 py-1 rounded transition flex items-center gap-1 font-bold ml-1" title="Verificar licencias subiendo una imagen">
+                            <i data-lucide="image-search" class="h-3 w-3"></i> Verificar Licencias
+                        </button>
+
                         <button id="btn-clear-all" class="text-xs text-red-400 hover:text-red-600 flex items-center gap-1 hidden ml-1">
                             <i data-lucide="eraser" class="h-3 w-3"></i>
                         </button>
                     </div>
+                </div>
+
+                <!-- BARRA DE ACCIONES MASIVAS (NUEVO) -->
+                <div id="bulk-actions" class="hidden bg-blue-50 border border-blue-200 p-3 rounded-lg mb-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 fade-in shadow-sm">
+                    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <span id="bulk-count" class="font-bold text-blue-700 text-sm whitespace-nowrap">0 seleccionados</span>
+                        <span class="text-blue-300 hidden md:inline">|</span>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="window.appActions.bulkSendMail()" class="bg-indigo-600 text-white px-3 py-1.5 rounded text-sm font-bold hover:bg-indigo-700 shadow-sm transition flex items-center gap-1">
+                                <i data-lucide="send" class="h-4 w-4"></i> Enviar
+                            </button>
+                            <span class="text-blue-200">|</span>
+                            <select id="bulk-program-select" class="text-sm bg-white border border-blue-200 text-slate-700 rounded p-1.5 outline-none focus:ring-2 focus:ring-blue-400">
+                                <option value="kronoPersonal">Krono Personal</option>
+                                <option value="kronoDual">KronoDual</option>
+                                <option value="tracksTelemetry">Tracks Telemetry</option>
+                                <option value="actualizaciones">Actualizaciones</option>
+                            </select>
+                            <button onclick="window.appActions.bulkMove()" class="bg-blue-600 text-white px-3 py-1.5 rounded text-sm font-bold hover:bg-blue-700 shadow-sm transition flex items-center gap-1">
+                                <i data-lucide="folder-output" class="h-4 w-4"></i> Mover
+                            </button>
+                        </div>
+                    </div>
+                    <button onclick="window.appActions.bulkDelete()" class="text-red-500 hover:text-red-700 bg-red-50 px-2 py-1.5 rounded border border-red-200 transition flex items-center gap-1 text-sm font-medium w-full md:w-auto justify-center" title="Eliminar seleccionados">
+                        <i data-lucide="trash-2" class="h-4 w-4"></i> Borrar
+                    </button>
+                </div>
+
+                <!-- SELECCIONAR TODOS (NUEVO) -->
+                <div class="flex items-center gap-2 px-2 mb-2 hidden" id="selectAll-container">
+                    <input type="checkbox" id="checkbox-all" onchange="window.appActions.toggleAll(this)" class="w-4 h-4 rounded text-blue-600 cursor-pointer">
+                    <label for="checkbox-all" class="text-sm text-gray-500 font-medium select-none cursor-pointer">Seleccionar todos</label>
                 </div>
 
                 <div id="contacts-list" class="grid gap-3"></div>
@@ -215,6 +269,9 @@
                         </button>
                         <button data-template="tracksTelemetry" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition bg-gray-100 text-gray-600 hover:bg-gray-200">
                             <i data-lucide="activity" class="h-4 w-4"></i> Tracks Telemetry
+                        </button>
+                        <button data-template="actualizaciones" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition bg-gray-100 text-gray-600 hover:bg-gray-200">
+                            <i data-lucide="bell" class="h-4 w-4"></i> Actualizaciones
                         </button>
                     </div>
                 </div>
@@ -259,6 +316,25 @@
         </div>
     </div>
 
+    <!-- MODAL VERIFICAR LICENCIAS (NUEVO) -->
+    <div id="modal-verify" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden fade-in">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-indigo-600 text-white p-4 border-b flex justify-between items-center">
+                <h3 class="font-bold flex items-center gap-2"><i data-lucide="image-search" class="h-5 w-5"></i> Analizador de Licencias (IA)</h3>
+                <button onclick="document.getElementById('modal-verify').classList.add('hidden')" class="text-indigo-200 hover:text-white transition"><i data-lucide="x" class="h-6 w-6"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1" id="verify-content">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="p-4 border-t bg-gray-50 flex justify-end gap-3 hidden" id="verify-actions">
+                <button onclick="document.getElementById('modal-verify').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition text-sm font-medium">Cancelar</button>
+                <button id="btn-delete-unlicensed" class="px-6 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 shadow-lg flex items-center gap-2 text-sm">
+                    <i data-lucide="trash-2" class="h-4 w-4"></i> Borrar Sin Licencia
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -274,7 +350,8 @@
         const DEFAULT_PLANTILLAS = {
             kronoPersonal: `Hola,\n\n¡Gracias por tu interés en KRONO PERSONAL!\n\nEs el gestor de tiempos ideal para entrenamientos individuales...`,
             kronoDual: `Hola,\n\n¡Qué bueno que te intereses por KRONODUAL!\n\nEste es nuestro sistema diseñado para competiciones 1vs1...`,
-            tracksTelemetry: `Hola,\n\nGracias por contactar sobre TRACKS TELEMETRY.\n\nEstás a punto de llevar el análisis de tu pista...`
+            tracksTelemetry: `Hola,\n\nGracias por contactar sobre TRACKS TELEMETRY.\n\nEstás a punto de llevar el análisis de tu pista...`,
+            actualizaciones: `Hola,\n\nTe escribimos para informarte de las últimas novedades y actualizaciones de nuestros sistemas.\n\n¡Esperamos que las disfrutes!`
         };
 
         // Estado App
@@ -282,6 +359,7 @@
         let plantillas = { ...DEFAULT_PLANTILLAS };
         let currentTemplateKey = 'kronoPersonal';
         let currentContactForMail = null;
+        let selectedContacts = new Set(); // <-- NUEVO: Registro de seleccionados
 
         // --- FIX: Normalizador de programas para datos guardados antiguos ---
         function normalizePrograma(p) {
@@ -290,6 +368,7 @@
             if (str.includes('personal')) return 'kronoPersonal';
             if (str.includes('dual')) return 'kronoDual';
             if (str.includes('track') || str.includes('telemetry')) return 'tracksTelemetry';
+            if (str.includes('actualiza') || str.includes('update')) return 'actualizaciones';
             return p;
         }
 
@@ -309,7 +388,12 @@
             inputImport: document.getElementById('input-import-json'),
             countKp: document.getElementById('count-kp'),
             countKd: document.getElementById('count-kd'),
-            countTt: document.getElementById('count-tt')
+            countTt: document.getElementById('count-tt'),
+            countAc: document.getElementById('count-ac'),
+            bulkActions: document.getElementById('bulk-actions'),
+            bulkCount: document.getElementById('bulk-count'),
+            selectAllContainer: document.getElementById('selectAll-container'),
+            checkboxAll: document.getElementById('checkbox-all')
         };
 
         // --- INICIALIZACIÓN ---
@@ -463,9 +547,11 @@
             const kp = contactos.filter(c => c.programa === 'kronoPersonal' && c.estado !== 'procesado');
             const kd = contactos.filter(c => c.programa === 'kronoDual' && c.estado !== 'procesado');
             const tt = contactos.filter(c => c.programa === 'tracksTelemetry' && c.estado !== 'procesado');
+            const ac = contactos.filter(c => c.programa === 'actualizaciones' && c.estado !== 'procesado');
             dom.countKp.textContent = kp.length;
             dom.countKd.textContent = kd.length;
             dom.countTt.textContent = tt.length;
+            if(dom.countAc) dom.countAc.textContent = ac.length;
 
             // Botones Herramientas
             const btnClear = document.getElementById('btn-clear-all');
@@ -475,36 +561,56 @@
                 dom.empty.classList.add('hidden');
                 btnClear.classList.remove('hidden');
                 btnExport.classList.remove('hidden');
+                dom.selectAllContainer.classList.remove('hidden');
+                dom.checkboxAll.checked = selectedContacts.size === contactos.length;
             } else {
                 dom.empty.classList.remove('hidden');
                 btnClear.classList.add('hidden');
                 btnExport.classList.add('hidden');
+                dom.selectAllContainer.classList.add('hidden');
+                selectedContacts.clear();
+            }
+
+            // Mostrar/Ocultar barra de acciones masivas
+            if (selectedContacts.size > 0) {
+                dom.bulkActions.classList.remove('hidden');
+                dom.bulkCount.textContent = `${selectedContacts.size} seleccionado${selectedContacts.size > 1 ? 's' : ''}`;
+            } else {
+                dom.bulkActions.classList.add('hidden');
             }
 
             contactos.forEach(c => {
                 const el = document.createElement('div');
                 const info = getProgramInfo(c.programa);
                 const isDone = c.estado === 'procesado';
+                const isSelected = selectedContacts.has(c.id);
                 
                 // Mantenemos el estilo verde para los procesados en la lista individual
-                el.className = `bg-white rounded-xl p-5 shadow-sm border-l-4 transition-all ${isDone ? 'border-green-400 bg-gray-50 opacity-60' : 'border-slate-800'}`;
+                el.className = `bg-white rounded-xl p-5 shadow-sm border-l-4 transition-all ${isDone ? 'border-green-400 bg-gray-50 opacity-60' : 'border-slate-800'} ${isSelected ? 'ring-2 ring-blue-400 bg-blue-50/50' : ''}`;
                 el.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <h3 class="font-bold text-lg text-gray-900 leading-none">${escapeHtml(c.nombre)}</h3>
-                                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${info.color}">${info.name}</span>
-                            </div>
-                            <p class="text-sm text-gray-500 font-mono">${escapeHtml(c.email)}</p>
+                    <div class="flex items-start gap-3 mb-3">
+                        <div class="mt-0.5">
+                            <input type="checkbox" onchange="window.appActions.toggleSelect('${c.id}', this.checked)" ${isSelected ? 'checked' : ''} class="w-4 h-4 cursor-pointer">
                         </div>
-                        <span class="text-xs font-bold text-gray-400">${c.fecha}</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h3 class="font-bold text-lg text-gray-900 leading-none">${escapeHtml(c.nombre)}</h3>
+                                        <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${info.color}">${info.name}</span>
+                                    </div>
+                                    <p class="text-sm text-gray-500 font-mono">${escapeHtml(c.email)}</p>
+                                </div>
+                                <span class="text-xs font-bold text-gray-400">${c.fecha}</span>
+                            </div>
+                        </div>
                     </div>
                     ${isDone ? `
-                        <div class="flex items-center gap-2 text-green-700 font-bold bg-green-100 p-2 rounded-lg justify-center border border-green-200 text-sm">
+                        <div class="flex items-center gap-2 text-green-700 font-bold bg-green-100 p-2 rounded-lg justify-center border border-green-200 text-sm ml-7">
                             <i data-lucide="check-circle" class="h-4 w-4"></i> Procesado
                         </div>
                     ` : `
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 ml-7">
                             <button onclick="window.appActions.prepare('${c.id}')" class="flex-1 bg-slate-800 text-white py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-900 shadow-md transition text-sm">
                                 <i data-lucide="send" class="h-4 w-4"></i> Generar
                             </button>
@@ -679,6 +785,76 @@
 
         // --- ACCIONES GLOBALES (Window) ---
         window.appActions = {
+            // NUEVAS FUNCIONES MASIVAS
+            toggleSelect: (id, isChecked) => {
+                if (isChecked) selectedContacts.add(id);
+                else selectedContacts.delete(id);
+                render();
+            },
+            toggleAll: (checkbox) => {
+                if (checkbox.checked) {
+                    contactos.forEach(c => selectedContacts.add(c.id));
+                } else {
+                    selectedContacts.clear();
+                }
+                render();
+            },
+            bulkMove: async () => {
+                const newProgram = document.getElementById('bulk-program-select').value;
+                if(confirm(`¿Mover los ${selectedContacts.size} contactos seleccionados a ${getProgramInfo(newProgram).name}?`)) {
+                    const promises = [];
+                    selectedContacts.forEach(id => {
+                        if (dbMode === 'CLOUD') promises.push(updateContactCloud(id, { programa: newProgram }));
+                        else promises.push(updateContactLocal(id, { programa: newProgram }));
+                    });
+                    await Promise.all(promises);
+                    selectedContacts.clear();
+                    render();
+                }
+            },
+            bulkDelete: async () => {
+                if(confirm(`¿Eliminar de forma permanente los ${selectedContacts.size} contactos seleccionados?`)) {
+                    const promises = [];
+                    selectedContacts.forEach(id => {
+                        if (dbMode === 'CLOUD') promises.push(deleteContactCloud(id));
+                        else promises.push(deleteContactLocal(id));
+                    });
+                    await Promise.all(promises);
+                    selectedContacts.clear();
+                    render();
+                }
+            },
+            bulkSendMail: () => {
+                const targets = contactos.filter(c => selectedContacts.has(c.id));
+                if (targets.length === 0) return;
+                
+                // Usamos la plantilla del primer contacto seleccionado como referencia
+                const programRef = targets[0].programa;
+                const info = getProgramInfo(programRef);
+                const body = plantillas[programRef] || "Hola, adjuntamos información.";
+                const emails = targets.map(c => c.email).join(',');
+                
+                const proceed = confirm(`⚠️ Se abrirá el correo para ${targets.length} contactos.\n\nPor defecto, se usará la plantilla de "${info.name}" (del primer contacto seleccionado).\n\nRevisa que los correos se envíen en CCO (Copia Oculta) por seguridad.`);
+                if(!proceed) return;
+
+                const link = `mailto:?bcc=${emails}&subject=${encodeURIComponent("Info: " + info.name)}&body=${encodeURIComponent(body)}`;
+                window.open(link, '_blank');
+                
+                setTimeout(() => {
+                    if(confirm("¿Se han enviado correctamente y en CCO?\n\nSi aceptas, se marcarán todos los seleccionados como 'Procesados'.")) {
+                        const promises = targets.map(c => {
+                            if (dbMode === 'CLOUD') return updateContactCloud(c.id, { estado: 'procesado' });
+                            else return updateContactLocal(c.id, { estado: 'procesado' });
+                        });
+                        Promise.all(promises).then(() => {
+                            selectedContacts.clear();
+                            render();
+                        });
+                    }
+                }, 1000);
+            },
+            
+            // FUNCIONES EXISTENTES
             delete: async (id) => {
                 if(confirm("¿Eliminar?")) {
                     if (dbMode === 'CLOUD') await deleteContactCloud(id);
@@ -765,7 +941,8 @@
             const map = {
                 kronoPersonal: { name: 'Krono Personal', color: 'bg-blue-100 text-blue-800 border-blue-200' },
                 kronoDual: { name: 'KronoDual', color: 'bg-purple-100 text-purple-800 border-purple-200' },
-                tracksTelemetry: { name: 'Tracks Telemetry', color: 'bg-orange-100 text-orange-800 border-orange-200' }
+                tracksTelemetry: { name: 'Tracks Telemetry', color: 'bg-orange-100 text-orange-800 border-orange-200' },
+                actualizaciones: { name: 'Actualizaciones', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' }
             };
             return map[k] || { name: 'Otro', color: 'bg-gray-100' };
         }
@@ -773,6 +950,179 @@
             if (!text) return text;
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
+
+        // --- SISTEMA DE VERIFICACIÓN POR IA (NUEVO) ---
+        async function fetchGeminiWithRetry(base64Data, mimeType) {
+            const apiKey = ""; // API Key se inyecta en el entorno
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{
+                    role: "user",
+                    parts: [
+                        { text: "Analiza esta imagen y extrae todos los correos electrónicos que aparezcan. Determina, según el contexto de la imagen (por ejemplo marcas de check, cruces, texto de estado, colores), si cada correo tiene una licencia activa o válida. Devuelve ÚNICAMENTE un array JSON válido de objetos con las propiedades 'email' (cadena) y 'hasLicense' (booleano)." },
+                        { inlineData: { mimeType: mimeType, data: base64Data } }
+                    ]
+                }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "ARRAY",
+                        items: {
+                            type: "OBJECT",
+                            properties: {
+                                email: { type: "STRING" },
+                                hasLicense: { type: "BOOLEAN" }
+                            }
+                        }
+                    }
+                }
+            };
+
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            for (let attempt = 0; attempt < 6; attempt++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const result = await response.json();
+                    return JSON.parse(result.candidates[0].content.parts[0].text);
+                } catch (error) {
+                    if (attempt === 5) throw error;
+                    await new Promise(res => setTimeout(res, delays[attempt]));
+                }
+            }
+        }
+
+        let contactsToDelete = [];
+
+        document.getElementById('btn-verify-image').addEventListener('click', () => {
+            document.getElementById('input-verify-image').click();
+        });
+
+        document.getElementById('input-verify-image').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const modal = document.getElementById('modal-verify');
+            const content = document.getElementById('verify-content');
+            const actions = document.getElementById('verify-actions');
+            
+            modal.classList.remove('hidden');
+            actions.classList.add('hidden');
+            content.innerHTML = `<div class="flex flex-col items-center justify-center py-8"><div class="loader mb-4 border-indigo-200 border-t-indigo-600"></div><p class="text-indigo-600 font-bold">Analizando imagen con IA...</p><p class="text-sm text-gray-500 mt-2 text-center">Buscando correos y verificando estado de licencias.<br>Esto puede tardar unos segundos.</p></div>`;
+
+            try {
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const base64String = event.target.result.split(',')[1];
+                    const mimeType = file.type;
+                    
+                    try {
+                        const extractedData = await fetchGeminiWithRetry(base64String, mimeType);
+                        processLicenseData(extractedData);
+                    } catch (err) {
+                        content.innerHTML = `<div class="text-red-500 p-4 bg-red-50 rounded border border-red-200"><strong class="block mb-1">Error al analizar la imagen:</strong> ${err.message}</div>`;
+                    }
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                 content.innerHTML = `<div class="text-red-500 p-4 bg-red-50 rounded border border-red-200">Error: ${error.message}</div>`;
+            }
+            
+            e.target.value = ''; // Resetear el input file
+        });
+
+        function processLicenseData(data) {
+            const content = document.getElementById('verify-content');
+            const actions = document.getElementById('verify-actions');
+            contactsToDelete = [];
+
+            if (!data || data.length === 0) {
+                content.innerHTML = `<p class="text-gray-500 text-center py-4">No se encontraron correos en la imagen o la IA no pudo procesarla correctamente.</p>`;
+                return;
+            }
+
+            let html = `<h4 class="font-bold mb-3 text-slate-800">Resultados del análisis (${data.length} correos detectados):</h4><ul class="space-y-2 max-h-64 overflow-y-auto pr-2">`;
+            
+            let foundUnlicensedInDb = 0;
+
+            data.forEach(item => {
+                const email = item.email.toLowerCase().trim();
+                const hasLicense = item.hasLicense;
+                
+                // Buscar en BD actual
+                const dbContact = contactos.find(c => c.email.toLowerCase().trim() === email);
+                
+                if (dbContact) {
+                    if (hasLicense) {
+                        html += `<li class="flex justify-between items-center p-2 bg-green-50 border border-green-200 rounded text-sm"><span class="font-mono text-green-800 truncate" title="${email}">${email}</span> <span class="bg-green-200 text-green-800 px-2 py-0.5 rounded text-[10px] font-bold uppercase whitespace-nowrap ml-2">Licencia Activa</span></li>`;
+                    } else {
+                        html += `<li class="flex justify-between items-center p-2 bg-red-50 border border-red-200 rounded text-sm"><span class="font-mono text-red-800 truncate" title="${email}">${email}</span> <span class="bg-red-200 text-red-800 px-2 py-0.5 rounded text-[10px] font-bold uppercase whitespace-nowrap ml-2">Sin Licencia</span></li>`;
+                        contactsToDelete.push(dbContact.id);
+                        foundUnlicensedInDb++;
+                    }
+                } else {
+                    html += `<li class="flex justify-between items-center p-2 bg-gray-50 border border-gray-200 rounded text-sm"><span class="font-mono text-gray-500 truncate" title="${email}">${email}</span> <span class="text-gray-400 text-[10px] uppercase font-bold whitespace-nowrap ml-2">No en BD</span></li>`;
+                }
+            });
+
+            html += `</ul>`;
+
+            if (foundUnlicensedInDb > 0) {
+                html += `<div class="mt-4 p-3 bg-red-100 text-red-800 rounded-lg text-sm border border-red-200">
+                    Se han encontrado <strong>${foundUnlicensedInDb}</strong> contactos en tu lista que <strong class="underline">no tienen licencia</strong> según la imagen. ¿Deseas eliminarlos de la base de datos?
+                </div>`;
+                actions.classList.remove('hidden');
+            } else {
+                html += `<div class="mt-4 p-3 bg-blue-50 text-blue-800 rounded-lg text-sm border border-blue-200">Todo en orden. No hay contactos sin licencia detectados en tu base de datos actual.</div>`;
+            }
+
+            content.innerHTML = html;
+        }
+
+        document.getElementById('btn-delete-unlicensed').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-delete-unlicensed');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Borrando...`;
+            btn.disabled = true;
+
+            try {
+                const promises = contactsToDelete.map(id => {
+                    if (dbMode === 'CLOUD') return deleteContactCloud(id);
+                    else return deleteContactLocal(id);
+                });
+
+                await Promise.all(promises);
+                
+                // Deseleccionarlos si estaban en la lista de masivos
+                contactsToDelete.forEach(id => selectedContacts.delete(id));
+                
+                render(); // Refrescar UI detrás
+                
+                // Mostrar éxito en el modal
+                document.getElementById('verify-actions').classList.add('hidden');
+                document.getElementById('verify-content').innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-6 text-center">
+                        <div class="h-12 w-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
+                            <i data-lucide="check" class="h-6 w-6"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800">¡Limpieza completada!</h4>
+                        <p class="text-gray-600 mt-2">Se han eliminado ${contactsToDelete.length} contactos sin licencia.</p>
+                        <button onclick="document.getElementById('modal-verify').classList.add('hidden')" class="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold transition">Aceptar</button>
+                    </div>
+                `;
+                lucide.createIcons();
+                
+            } catch (err) {
+                document.getElementById('verify-content').innerHTML = `<div class="text-red-500 p-4 bg-red-50 rounded border border-red-200">Error al borrar: ${err.message}</div>`;
+                btn.innerHTML = `<i data-lucide="trash-2" class="h-4 w-4"></i> Reintentar`;
+                btn.disabled = false;
+                lucide.createIcons();
+            }
+        });
 
         // Start
         initApp();
