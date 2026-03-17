@@ -84,7 +84,7 @@
                     <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
                         <div class="flex justify-between items-center mb-2">
                             <span class="font-bold text-blue-300 text-sm">Krono Personal</span>
-                            <span id="count-kp" class="bg-blue-900 text-blue-200 text-xs px-2 py-0.5 rounded-full" title="Total de clientes">0</span>
+                            <span id="count-kp" class="bg-blue-900 text-blue-200 text-xs px-2 py-0.5 rounded-full" title="Clientes con licencia">0</span>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="window.appActions.copyMassEmails('kronoPersonal')" class="flex-1 bg-white text-slate-900 text-xs font-bold py-2 rounded hover:bg-blue-50 transition flex justify-center items-center gap-1">
@@ -99,7 +99,7 @@
                     <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
                         <div class="flex justify-between items-center mb-2">
                             <span class="font-bold text-purple-300 text-sm">KronoDual</span>
-                            <span id="count-kd" class="bg-purple-900 text-purple-200 text-xs px-2 py-0.5 rounded-full" title="Total de clientes">0</span>
+                            <span id="count-kd" class="bg-purple-900 text-purple-200 text-xs px-2 py-0.5 rounded-full" title="Clientes con licencia">0</span>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="window.appActions.copyMassEmails('kronoDual')" class="flex-1 bg-white text-slate-900 text-xs font-bold py-2 rounded hover:bg-purple-50 transition flex justify-center items-center gap-1">
@@ -114,7 +114,7 @@
                     <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
                         <div class="flex justify-between items-center mb-2">
                             <span class="font-bold text-orange-300 text-sm">Tracks Telemetry</span>
-                            <span id="count-tt" class="bg-orange-900 text-orange-200 text-xs px-2 py-0.5 rounded-full" title="Total de clientes">0</span>
+                            <span id="count-tt" class="bg-orange-900 text-orange-200 text-xs px-2 py-0.5 rounded-full" title="Clientes con licencia">0</span>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="window.appActions.copyMassEmails('tracksTelemetry')" class="flex-1 bg-white text-slate-900 text-xs font-bold py-2 rounded hover:bg-orange-50 transition flex justify-center items-center gap-1">
@@ -129,7 +129,7 @@
                     <div class="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
                         <div class="flex justify-between items-center mb-2">
                             <span class="font-bold text-emerald-300 text-sm">Actualizaciones</span>
-                            <span id="count-ac" class="bg-emerald-900 text-emerald-200 text-xs px-2 py-0.5 rounded-full" title="Total de clientes">0</span>
+                            <span id="count-ac" class="bg-emerald-900 text-emerald-200 text-xs px-2 py-0.5 rounded-full" title="Clientes con licencia">0</span>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="window.appActions.copyMassEmails('actualizaciones')" class="flex-1 bg-white text-slate-900 text-xs font-bold py-2 rounded hover:bg-emerald-50 transition flex justify-center items-center gap-1">
@@ -543,11 +543,11 @@
             // AHORA CUENTA TODOS, NO SOLO LOS PENDIENTES
             dom.counter.textContent = contactos.length;
             
-            // Actualizar Contadores Masivos (SOLO PENDIENTES PARA EVITAR RE-ENVIOS)
-            const kp = contactos.filter(c => c.programa === 'kronoPersonal' && c.estado !== 'procesado');
-            const kd = contactos.filter(c => c.programa === 'kronoDual' && c.estado !== 'procesado');
-            const tt = contactos.filter(c => c.programa === 'tracksTelemetry' && c.estado !== 'procesado');
-            const ac = contactos.filter(c => c.programa === 'actualizaciones' && c.estado !== 'procesado');
+            // Actualizar Contadores Masivos (Contar los que tienen licencia activa)
+            const kp = contactos.filter(c => c.programa === 'kronoPersonal' && c.hasLicense);
+            const kd = contactos.filter(c => c.programa === 'kronoDual' && c.hasLicense);
+            const tt = contactos.filter(c => c.programa === 'tracksTelemetry' && c.hasLicense);
+            const ac = contactos.filter(c => c.programa === 'actualizaciones' && c.hasLicense);
             dom.countKp.textContent = kp.length;
             dom.countKd.textContent = kd.length;
             dom.countTt.textContent = tt.length;
